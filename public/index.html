@@ -714,7 +714,7 @@ const newId = () => Math.random().toString(36).slice(2, 10) + Date.now().toStrin
 let inflight = 0, lastJSON = '';
 
 async function api(path, method = 'GET', body) {
-  const res = await fetch('/api' + path, {
+  const res = await fetch('api' + path, {
     method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined
   });
   const data = await res.json().catch(() => ({}));
