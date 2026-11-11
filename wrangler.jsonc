@@ -1,0 +1,21 @@
+{
+  // The name of your Worker — it becomes part of the web address
+  "name": "showup",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-01",
+
+  // Serve everything in the /public folder as the website
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  // Connect the Worker to your D1 database. In the code it's called env.DB
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "showup-db",
+      "database_id": "bac5fa76-6733-4a6c-8056-7ed4a81848d9"
+    }
+  ]
+}

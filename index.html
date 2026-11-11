@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>waywo · Show up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
+<style>
+:root {
+  --page: #ffffff;
+  --canvas: #f5f4f7;
+  --grid: #d9d9d9;
+  --ink: #1c1b1f;
+  --muted: #8e8d93;
+  --paper: #ffffff;
+  --button: #f5f4f7;
+  --button-hover: #ebeaee;
+  --line: #ebeaee;
+  --focus: #3b82f6;
+  --accent: #ec9c91;
+  --accent-hover: #e68b7f;
+  --radius: 16px;
+  --serif: "Instrument Serif", Georgia, serif;
+  --sans: "Instrument Sans", system-ui, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--page); color: var(--ink); font-family: var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---- Bar (matches Ben's board) ---- */
+.bar {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center;
+  padding: 16px 32px; background: var(--page); font: 22px/1.2 var(--serif);
+}
+.bar-left { justify-self: start; min-width: 0; }
+.bar-right { justify-self: end; display: flex; align-items: center; gap: 10px; }
+.back {
+  display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px 0 8px;
+  border-radius: var(--radius); color: var(--ink); text-decoration: none;
+}
+.back:hover { background: var(--canvas); }
+.title-picker { position: relative; }
+.pill {
+  display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px 0 20px;
+  border: 1px solid #c9c8cd; border-radius: var(--radius); background: var(--page); font: inherit; cursor: pointer; white-space: nowrap;
+}
+.pill:hover { background: var(--canvas); }
+.pill .chevron { transition: transform .15s; }
+.pill[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+.menu {
+  position: absolute; z-index: 20; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; width: max-content; min-width: 100%; padding: 8px;
+  border-radius: var(--radius); background: var(--page); font: 17px var(--sans);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 10px 30px rgba(0,0,0,.14);
+}
+.menu > button { padding: 10px 14px; border: none; border-radius: var(--radius); background: none; text-align: left; cursor: pointer; }
+.menu > button:hover { background: var(--canvas); }
+.menu .row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 10px 14px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px;
+  border: none; border-radius: var(--radius); background: var(--button); font: 17px var(--sans); cursor: pointer; white-space: nowrap;
+}
+.btn:hover { background: var(--button-hover); }
+.btn.primary { background: var(--accent); }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.small { height: 34px; padding: 0 12px; font-size: 14px; border-radius: 12px; }
+.btn.ghost { background: none; }
+.btn.ghost:hover { background: var(--canvas); }
+.btn:disabled { opacity: .45; cursor: default; }
+.bar .btn { font: 22px var(--serif); }
+
+/* ---- Canvas ---- */
+#stage {
+  position: relative; flex: 1; overflow: auto; margin: 0 10px 10px; border-radius: var(--radius);
+  background-color: var(--canvas);
+  background-image:
+    linear-gradient(var(--grid) 0.5px, transparent 0.5px),
+    linear-gradient(90deg, var(--grid) 0.5px, transparent 0.5px),
+    linear-gradient(rgba(217,217,217,.45) 0.5px, transparent 0.5px),
+    linear-gradient(90deg, rgba(217,217,217,.45) 0.5px, transparent 0.5px);
+  background-size: 124px 124px, 124px 124px, 62px 62px, 62px 62px;
+  background-attachment: local;
+}
+.layout { display: grid; grid-template-columns: 1fr 360px; gap: 28px; padding: 40px 32px 60px; min-height: 100%; align-items: start; }
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } .bar { padding: 12px 16px; grid-template-columns: auto 1fr; } .bar-centre { display: none; } .bar .btn .lbl { display: none; } }
+
+.headline { font: 44px/1.05 var(--serif); margin: 0 0 6px; }
+.sub { color: var(--muted); font-size: 16px; margin: 0 0 30px; max-width: 560px; line-height: 1.45; }
+
+/* ---- Team cards: posts pinned to the board ---- */
+.wall { display: flex; flex-wrap: wrap; gap: 38px 34px; }
+.piece {
+  position: relative; width: 210px; padding: 8px 8px 0; background: var(--paper);
+  box-shadow: 0 2px 4px rgba(0,0,0,.08), 0 10px 22px rgba(0,0,0,.1);
+  transform: rotate(var(--r)); transition: transform .2s, box-shadow .2s; cursor: pointer; border: 0 solid var(--accent);
+  animation: land .35s cubic-bezier(.2,1.4,.4,1) both;
+}
+.piece:hover { transform: rotate(0deg) translateY(-3px); box-shadow: 0 6px 10px rgba(0,0,0,.12), 0 22px 40px rgba(0,0,0,.16); }
+@keyframes land { from { transform: rotate(var(--r)) scale(.8); opacity: 0; } }
+.piece.bust { border-width: 6px; padding: 6px 6px 0; }
+.tape {
+  position: absolute; top: -12px; left: 50%; width: 70px; height: 22px; transform: translateX(-50%) rotate(var(--tr, -2deg));
+  background: var(--tape-colour); opacity: .85;
+}
+.photo { aspect-ratio: 1; display: grid; place-items: center; overflow: hidden; }
+.photo svg { width: 100%; height: 100%; display: block; }
+.strip { padding: 10px 4px 12px; }
+.name-row { display: flex; align-items: center; gap: 8px; font: 600 15px var(--sans); }
+.name-row .dot { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.name-row .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pts { margin-left: auto; font: 500 13px var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pts b { font: 500 13px var(--sans); color: var(--muted); }
+.faces { display: flex; gap: 3px; margin-top: 10px; flex-wrap: nowrap; }
+.face-btn { width: 32px; height: 32px; padding: 1px; border: none; background: none; border-radius: 50%; cursor: pointer; transition: transform .15s cubic-bezier(.2,1.6,.4,1); }
+.face-btn svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.face-btn:disabled { cursor: default; }
+.face-btn.happy:not(:disabled):hover { transform: scale(1.22) rotate(-10deg); }
+.face-btn.happy:not(:disabled):hover .eyes { transform: translateY(-1px); }
+.face-btn.happy:not(:disabled):active { transform: scale(.85); }
+.face-btn.sad:not(:disabled):hover { transform: scale(1.12); }
+.face-btn .eyes { transition: transform .15s; }
+.face-btn.ouch { animation: ouch .55s ease both; }
+@keyframes ouch { 0% { transform: scale(1); } 18% { transform: scale(1.5, .6); } 38% { transform: scale(.75, 1.3) rotate(18deg); } 58% { transform: scale(1.1) rotate(-22deg); } 78% { transform: rotate(8deg); } 100% { transform: none; } }
+.face-btn.cheer { animation: cheer .5s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes cheer { 0% { transform: scale(.4) rotate(-90deg); } 100% { transform: none; } }
+.face-btn .tear { opacity: 0; }
+.face-btn.fresh .tear { animation: tear 1.6s ease-in .15s both; }
+@keyframes tear { 0% { opacity: 0; transform: translateY(-2px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(12px); } }
+.piece.shake { animation: shake .6s ease both; }
+@keyframes shake { 0%,100% { transform: rotate(var(--r)); } 15% { transform: rotate(calc(var(--r) - 6deg)) translateX(-6px); } 35% { transform: rotate(calc(var(--r) + 6deg)) translateX(6px); } 55% { transform: rotate(calc(var(--r) - 4deg)) translateX(-4px); } 75% { transform: rotate(calc(var(--r) + 2deg)) translateX(2px); } }
+.bubble {
+  position: fixed; z-index: 80; max-width: 220px; padding: 7px 12px; border-radius: 12px; background: var(--ink); color: #fff;
+  font: 600 13px/1.3 var(--sans); text-align: center; pointer-events: none; transform: translate(-50%, -100%);
+  animation: bubble 2.1s ease forwards; box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+.bubble::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 10px; height: 10px; background: var(--ink); transform: translateX(-50%) rotate(45deg); border-radius: 2px; }
+@keyframes bubble { 0% { opacity: 0; transform: translate(-50%, -70%) scale(.5); } 10% { opacity: 1; transform: translate(-50%, -100%) scale(1.08); } 16% { transform: translate(-50%, -100%) scale(1); } 82% { opacity: 1; transform: translate(-50%, -100%); } 100% { opacity: 0; transform: translate(-50%, -125%); } }
+.floaty { position: fixed; z-index: 81; font: 30px/1 var(--serif); pointer-events: none; transform: translate(-50%, -50%); animation: floaty 1.1s ease-out forwards; }
+@keyframes floaty { 0% { opacity: 0; transform: translate(-50%, -20%) scale(.6); } 20% { opacity: 1; transform: translate(-50%, -60%) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -190%) scale(1); } }
+.verdict { margin-top: 10px; padding: 10px; border-radius: 12px; background: #fdf0ee; font-size: 14px; line-height: 1.35; }
+.verdict b { display: block; font: 20px/1.1 var(--serif); margin-bottom: 4px; font-weight: 400; }
+.verdict .btn { margin-top: 8px; width: 100%; justify-content: center; }
+.add-card {
+  width: 210px; min-height: 290px; display: grid; place-content: center; gap: 8px; text-align: center;
+  border: 2px dashed #c9c8cd; border-radius: 4px; background: rgba(255,255,255,.5); color: var(--muted); cursor: pointer; font: 22px var(--serif);
+}
+.add-card:hover { background: #fff; color: var(--ink); }
+.empty-note { color: var(--muted); font: 28px/1.2 var(--serif); padding: 40px 0; }
+
+/* ---- Side panels ---- */
+.side { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 0; }
+.panel { background: var(--page); border-radius: var(--radius); padding: 20px; box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.06); }
+.panel h2 { font: 28px/1.1 var(--serif); font-weight: 400; margin: 0 0 4px; }
+.panel .hint { color: var(--muted); font-size: 14px; margin: 0 0 14px; line-height: 1.4; }
+.mini-wheel { display: grid; place-items: center; margin: 4px 0 14px; }
+.flist { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow: auto; }
+.flist li { display: flex; align-items: center; gap: 10px; padding: 8px 6px 8px 10px; border-radius: 10px; font-size: 15px; line-height: 1.3; }
+.flist li:hover { background: var(--canvas); }
+.flist .sw { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.flist .t { flex: 1; }
+.x { border: none; background: none; color: var(--muted); cursor: pointer; border-radius: 8px; width: 28px; height: 28px; font-size: 18px; line-height: 1; opacity: 0; }
+.flist li:hover .x, .x:focus-visible { opacity: 1; }
+.x:hover { background: var(--button-hover); color: var(--ink); }
+.inline-add { display: flex; gap: 8px; }
+input[type=text], input[type=date], input[type=number], select {
+  flex: 1; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #c9c8cd; border-radius: 12px; font: 15px var(--sans); background: var(--page); color: var(--ink);
+}
+.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow: auto; }
+.log li { font-size: 14px; line-height: 1.4; display: grid; grid-template-columns: 22px 1fr; gap: 8px; }
+.log .when { display: block; color: var(--muted); font-size: 12px; }
+.log .ic { font-size: 15px; }
+
+/* ---- Modals ---- */
+.scrim { position: fixed; inset: 0; z-index: 50; background: rgba(28,27,31,.32); display: grid; place-items: center; padding: 16px; }
+.modal {
+  width: min(560px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: var(--page); border-radius: 20px; padding: 26px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 20px 50px rgba(0,0,0,.2); animation: pop .22s cubic-bezier(.2,1.3,.4,1) both;
+}
+.modal.wide { width: min(760px, 100%); }
+@keyframes pop { from { transform: scale(.94); opacity: 0; } }
+.modal h3 { font: 34px/1.1 var(--serif); font-weight: 400; margin: 0 0 6px; }
+.modal .hint { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
+.field input, .field select { flex: none; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font: 500 14px var(--sans); }
+.field-row { display: flex; gap: 12px; }
+.field-row .field { flex: 1; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.actions .left { margin-right: auto; }
+.danger { color: #b3261e; }
+
+.roll { display: flex; flex-direction: column; gap: 4px; }
+.roll-row { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 4px; border-radius: 12px; }
+.roll-row:hover { background: var(--canvas); }
+.roll-row .face { width: 40px; height: 40px; border-radius: 12px; overflow: hidden; flex: none; }
+.roll-row .nm { flex: 1; font-weight: 500; }
+.seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--canvas); border-radius: 12px; }
+.seg button { border: none; background: none; padding: 6px 12px; border-radius: 9px; font: 500 13px var(--sans); cursor: pointer; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--page); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.seg button.miss[aria-pressed="true"] { background: var(--accent); }
+
+/* Avatar maker */
+.maker { display: grid; grid-template-columns: 230px 1fr; gap: 24px; }
+@media (max-width: 640px) { .maker { grid-template-columns: 1fr; } }
+.maker-preview { position: relative; }
+.maker-preview .frame { background: #fff; padding: 8px 8px 30px; box-shadow: 0 2px 4px rgba(0,0,0,.08), 0 10px 22px rgba(0,0,0,.1); transform: rotate(-2deg); }
+.maker-preview .photo { border-radius: 2px; }
+.maker-preview .btn { width: 100%; justify-content: center; margin-top: 18px; }
+.parts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+.part { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 4px 4px 12px; border-radius: 12px; background: var(--canvas); font: 500 14px var(--sans); }
+.part .arrows { display: flex; }
+.part button { border: none; background: none; width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 16px; }
+.part button:hover { background: var(--button-hover); }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { width: 30px; height: 30px; padding: 0; border: none; border-radius: 10px; cursor: pointer; }
+.swatch:hover { box-shadow: 0 0 0 2px var(--page), 0 0 0 4px #c9c8cd; }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--page), 0 0 0 4px var(--ink); }
+.stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--canvas); border-radius: 12px; padding: 3px; }
+.stepper button { border: none; background: none; width: 34px; height: 34px; border-radius: 9px; cursor: pointer; font-size: 18px; }
+.stepper button:hover { background: var(--page); }
+.stepper span { min-width: 28px; text-align: center; font: 600 16px var(--sans); }
+
+/* Spinner */
+.spin-wrap { position: relative; width: min(420px, 80vw); aspect-ratio: 1; margin: 6px auto 0; }
+.spin-wrap svg.wheel { width: 100%; height: 100%; display: block; transition: transform 5.2s cubic-bezier(.12,.72,.12,1); filter: drop-shadow(0 10px 22px rgba(0,0,0,.14)); }
+.pointer { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 34px; height: 44px; z-index: 2; filter: drop-shadow(0 2px 3px rgba(0,0,0,.2)); }
+.hub { position: absolute; inset: 0; margin: auto; width: 22%; height: 22%; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.15); z-index: 1; overflow: hidden; }
+.hub svg { width: 100%; height: 100%; }
+.result { text-align: center; margin-top: 20px; min-height: 92px; }
+.result .label { color: var(--muted); font-size: 14px; }
+.result .what { font: 34px/1.1 var(--serif); margin-top: 4px; }
+.result.show .what { animation: pop .35s cubic-bezier(.2,1.5,.4,1) both; }
+
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; padding: 12px 20px; border-radius: var(--radius); background: var(--ink); color: #fff; font: 15px var(--sans); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+.status-note { margin: 0 0 18px; padding: 10px 14px; border-radius: 12px; background: #fff7e6; font-size: 14px; display: inline-block; }
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
+.confetti i { position: absolute; top: -20px; width: 10px; height: 14px; border-radius: 2px; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-left">
+    <a class="back" href="https://waywo.bensxstn.workers.dev/" target="_blank" rel="noopener">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      waywo board
+    </a>
+  </div>
+  <div class="bar-centre">
+    <div class="title-picker">
+      <button class="pill" id="title-btn" type="button" aria-expanded="false" aria-controls="title-menu">
+        <span>Show up&nbsp;&nbsp;·&nbsp;&nbsp;points &amp; forfeits</span>
+        <svg class="chevron" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 7.5 10 13l5.5-5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="menu" id="title-menu" hidden>
+        <div class="row"><span>Starting points</span>
+          <span class="stepper"><button type="button" data-start="-1" aria-label="Fewer">−</button><span id="start-val">5</span><button type="button" data-start="1" aria-label="More">+</button></span>
+        </div>
+        <button type="button" id="new-season">Start a new season (reset everyone)</button>
+        <button type="button" id="sound">Sound effects: on</button>
+        <button type="button" id="how">How it works</button>
+      </div>
+    </div>
+  </div>
+  <div class="bar-right">
+    <button class="btn ghost write-only" id="add-designer" type="button">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3.5v13M3.5 10h13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="lbl">Add designer</span>
+    </button>
+    <button class="btn primary write-only" id="log-btn" type="button">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="lbl">Log a session</span>
+    </button>
+  </div>
+</header>
+
+<main id="stage">
+  <div class="layout">
+    <section>
+      <h1 class="headline">Who's showing up?</h1>
+      <p class="sub" id="sub">Everyone starts the season with <b id="start-copy">5</b> smileys. Miss a team ceremony and someone gets to make one of yours sad. Lose them all and the wheel decides your fate.</p>
+      <p class="status-note" id="status" hidden></p>
+      <div class="wall" id="wall"></div>
+    </section>
+    <aside class="side">
+      <div class="panel">
+        <h2>The forfeit wheel</h2>
+        <p class="hint" id="wheel-hint">Run out of points and you spin.</p>
+        <div class="mini-wheel" id="mini-wheel"></div>
+        <ul class="flist" id="flist"></ul>
+        <form class="inline-add write-only" id="f-form">
+          <input type="text" id="f-input" maxlength="90" placeholder="Add a forfeit…" aria-label="New forfeit">
+          <button class="btn small primary" type="submit">Add</button>
+        </form>
+        <button class="btn small ghost write-only" id="starters" type="button" hidden style="margin-top:8px">Add some starter forfeits</button>
+      </div>
+      <div class="panel">
+        <h2>Recently</h2>
+        <ul class="log" id="log"></ul>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div id="modal-root"></div>
+
+<script>
+/* ============================================================
+   Avatar maker — original chunky heads, bold ink lines
+   ============================================================ */
+const INK = '#1c1b1f';
+const FACE = ['#F0614B','#F7C23E','#3DBA6F','#F4A3C8','#7B92CF','#F59A30','#A8D0D8','#D2559A'];
+const HAIR = ['#1c1b1f','#4A2F24','#8A5A3B','#D9672E','#E8C25E','#B9B6BF','#F08FB8','#5B7FD1'];
+const PASTEL = ['#BAC5A3','#A2BBC4','#F2D29F','#EC9C91','#B4ABC7','#A7C6BE','#DED6C5','#C8B6BE'];
+const PARTS = { shape: 6, hair: 10, fringe: 4, eyes: 6, nose: 5, mouth: 8, extra: 7 };
+const PART_LABELS = { shape: 'Head', hair: 'Hair', fringe: 'Fringe', eyes: 'Eyes', nose: 'Nose', mouth: 'Mouth', extra: 'Extra' };
+let uid = 0;
+
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function randomAvatar() {
+  const r = Math.random, a = {};
+  for (const k in PARTS) a[k] = Math.floor(r() * PARTS[k]);
+  a.fringe = r() < .55 ? 0 : 1 + Math.floor(r() * 3);
+  a.hairc = r() < .55 ? 0 : Math.floor(r() * HAIR.length);
+  a.skin = Math.floor(r() * FACE.length); a.bg = Math.floor(r() * PASTEL.length); a.seed = Math.floor(r() * 1e9);
+  return a;
+}
+function cleanAvatar(a) {
+  const o = {};
+  for (const k in PARTS) o[k] = clampInt(a && a[k], 0, PARTS[k] - 1);
+  o.hairc = clampInt(a && a.hairc, 0, HAIR.length - 1); o.skin = clampInt(a && a.skin, 0, FACE.length - 1); o.bg = clampInt(a && a.bg, 0, PASTEL.length - 1);
+  o.seed = clampInt(a && a.seed, 0, 1e9);
+  return o;
+}
+function clampInt(v, lo, hi) { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo; }
+
+function avatarSVG(raw, opts = {}) {
+  const a = cleanAvatar(raw), id = 'av' + (++uid), skin = FACE[a.skin], rand = rng(a.seed);
+  const W = [56, 54, 46, 66, 50, 54][a.shape], T = [56, 56, 50, 68, 52, 54][a.shape];
+  const L = 100 - W, R = 100 + W;
+  const HC = HAIR[a.hairc];
+  const sh = (d, w = 5) => `<path d="${d}" fill="none" stroke="${HC}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const s = (d, w = 5) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  let behind = '', head = '', front = '';
+
+  // hair that sits behind the head
+  if (a.hair === 6) behind += `<rect x="${L-12}" y="${T-8}" width="${2*W+24}" height="128" rx="${W}" fill="${HC}"/>`;
+  if (a.hair === 9) behind += `<path d="M${L-12} ${T+34} C${L-16} ${T-18} ${R+16} ${T-18} ${R+12} ${T+34} C${R+16} ${T+80} ${R+22} ${T+112} ${R+26} 200 L${L-26} 200 C${L-22} ${T+112} ${L-16} ${T+80} ${L-12} ${T+34} Z" fill="${HC}"/>`;
+  if (a.hair === 3) behind += `<circle cx="${100-W*0.72}" cy="${T+2}" r="21" fill="${HC}"/><circle cx="${100+W*0.72}" cy="${T+2}" r="21" fill="${HC}"/>`;
+
+  // ears
+  const showEars = a.hair !== 6 && a.hair !== 9;
+  if (showEars) {
+    behind += `<circle cx="${L+2}" cy="116" r="13" fill="${skin}"/><circle cx="${R-2}" cy="116" r="13" fill="${skin}"/>`;
+    front += s(`M${L-2} 110 q-5 6 1 12`, 3.5) + s(`M${R+2} 110 q5 6 -1 12`, 3.5);
+  }
+
+  // head
+  const shapes = [
+    `<circle cx="100" cy="112" r="56" fill="${skin}"/>`,
+    `<rect x="46" y="56" width="108" height="114" rx="28" fill="${skin}"/>`,
+    `<ellipse cx="100" cy="112" rx="46" ry="62" fill="${skin}"/>`,
+    `<ellipse cx="100" cy="118" rx="66" ry="50" fill="${skin}"/>`,
+    `<path d="M100 52 C72 52 64 78 62 98 C52 122 46 170 100 172 C154 170 148 122 138 98 C136 78 128 52 100 52 Z" fill="${skin}"/>`,
+    `<path d="M62 72 C82 46 152 50 154 102 C156 142 140 172 98 170 C54 168 42 94 62 72 Z" fill="${skin}"/>`
+  ];
+  head += shapes[a.shape];
+  // speckle grain
+  let speck = '';
+  for (let i = 0; i < 26; i++) speck += `<circle cx="${(L + 8 + rand() * (2*W - 16)).toFixed(1)}" cy="${(T + 14 + rand() * 96).toFixed(1)}" r="${(0.7 + rand() * 1.2).toFixed(1)}" fill="#fff" opacity="${(0.25 + rand() * .3).toFixed(2)}"/>`;
+
+
+  // hair in front
+  switch (a.hair) {
+    case 1: for (let x = 80; x <= 120; x += 8) front += sh(`M${x} ${T+6} L${x} ${T+22}`, 4); break;
+    case 2: front += `<path d="M${L-4} ${T+42} Q${L-6} ${T-12} 100 ${T-10} Q${R+6} ${T-12} ${R+4} ${T+42} Q${R-14} ${T+16} 100 ${T+20} Q${L+14} ${T+16} ${L-4} ${T+42} Z" fill="${HC}"/>`; break;
+    case 3: front += `<path d="M${L+6} ${T+26} Q100 ${T-14} ${R-6} ${T+26} Q100 ${T+8} ${L+6} ${T+26} Z" fill="${HC}"/>`; break;
+    case 4: {
+      let d = ''; for (let i = 0; i < 7; i++) { const x = L + 12 + i * ((2*W - 24) / 6), y = T + 2 + (i % 2) * 6; d += `M${x+7} ${y} a7 7 0 1 1 -0.1 0 `; }
+      front += sh(d, 3.5) + sh(`M100 ${T} C78 ${T-48} 124 ${T-52} 102 ${T-4} C90 ${T-34} 132 ${T-36} 106 ${T}`, 3.5); break; }
+    case 5: front += `<path d="M${L-2} ${T+34} C${L-2} ${T-8} ${R} ${T-16} ${R+6} ${T+28} C${R-22} ${T+6} ${L+40} ${T+6} ${L-2} ${T+34} Z" fill="${HC}"/>`; break;
+    case 6: front += `<path d="M${L} ${T+36} Q100 ${T-14} ${R} ${T+36} Q${R-8} ${T+14} 100 ${T+16} Q${L+8} ${T+14} ${L} ${T+36} Z" fill="${HC}"/>`; break;
+    case 7: front += `<path d="M${100-24} ${T+8} L${100+6} ${T-46} L${100+28} ${T+6} Z" fill="${INK}"/><circle cx="${100+6}" cy="${T-48}" r="7" fill="${FACE[(a.skin+3)%FACE.length]}"/>`; break;
+    case 8: front += `<path d="M${L+4} ${T+30} Q100 ${T-14} ${R-4} ${T+30} Q100 ${T+10} ${L+4} ${T+30} Z" fill="${HC}"/>` +
+      sh(`M${L+10} ${T+16} L${L-16} ${T-2} M${L+10} ${T+16} L${L-12} ${T-12}`, 5) + sh(`M${R-10} ${T+16} L${R+16} ${T-2} M${R-10} ${T+16} L${R+12} ${T-12}`, 5) +
+      `<circle cx="${L+8}" cy="${T+16}" r="5" fill="${FACE[(a.skin+2)%FACE.length]}"/><circle cx="${R-8}" cy="${T+16}" r="5" fill="${FACE[(a.skin+2)%FACE.length]}"/>`; break;
+    case 9: front += `<path d="M99 ${T-9} Q${L-8} ${T-8} ${L-6} ${T+50} Q${L+8} ${T+12} 99 ${T+2} Z M101 ${T-9} Q${R+8} ${T-8} ${R+6} ${T+50} Q${R-8} ${T+12} 101 ${T+2} Z" fill="${HC}"/>`; break;
+  }
+
+  // fringe — sits over any hairstyle
+  const B = Math.min(T + 36, 93);
+  switch (a.fringe) {
+    case 1: front += `<path d="M${L+3} ${B} C${L} ${T+6} ${L+12} ${T-8} 100 ${T-8} C${R-12} ${T-8} ${R} ${T+6} ${R-3} ${B} Q100 ${B+6} ${L+3} ${B} Z" fill="${HC}"/>`; break;
+    case 2: front += `<path d="M${L} ${B+6} C${L-4} ${T+2} ${L+16} ${T-10} 104 ${T-9} C${R-6} ${T-8} ${R+4} ${T+8} ${R+1} ${B-12} Q${R-30} ${B-14} ${L} ${B+6} Z" fill="${HC}"/>`; break;
+    case 3: {
+      const n = 7, step = (2 * W - 10) / n; let d = `M${L+5} ${B} C${L+1} ${T+6} ${L+12} ${T-8} 100 ${T-8} C${R-12} ${T-8} ${R-1} ${T+6} ${R-5} ${B}`;
+      for (let i = n - 1; i >= 0; i--) { const x = L + 5 + i * step; d += ` L${(x + step / 2).toFixed(1)} ${B - 10} L${x.toFixed(1)} ${B}`; }
+      front += `<path d="${d} Z" fill="${HC}"/>`; break; }
+  }
+
+  // eyes
+  const ey = 108, ex = [80, 120];
+  ex.forEach((x, i) => {
+    switch (a.eyes) {
+      case 0: front += `<circle cx="${x}" cy="${ey}" r="5.5" fill="${INK}"/>`; break;
+      case 1: front += `<circle cx="${x}" cy="${ey}" r="12" fill="#fff" stroke="${INK}" stroke-width="4"/><path d="M${x} ${ey-12} A12 12 0 0 ${i ? 1 : 0} ${x} ${ey+12} Z" fill="${INK}"/>`; break;
+      case 2: front += `<ellipse cx="${x}" cy="${ey}" rx="13" ry="8" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="${x+6}" cy="${ey}" r="4.5" fill="${INK}"/>` + s(`M${x-10} ${ey-16} L${x+10} ${ey-18}`, 4); break;
+      case 3: front += s(`M${x-10} ${ey+2} Q${x} ${ey-8} ${x+10} ${ey+2}`, 4) + s(`M${x-7} ${ey-6} l-3 -6 M${x} ${ey-8} l0 -7 M${x+7} ${ey-6} l3 -6`, 3); break;
+      case 4: front += s(`M${x-11} ${ey} Q${x} ${ey+6} ${x+11} ${ey}`, 4) + `<circle cx="${x}" cy="${ey+5}" r="4" fill="${INK}"/>`; break;
+      case 5: front += `<circle cx="${x}" cy="${ey}" r="10" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="${x-2}" cy="${ey+2}" r="4.5" fill="${INK}"/>` + s(i ? `M${x-8} ${ey-17} L${x+9} ${ey-13}` : `M${x-9} ${ey-13} L${x+8} ${ey-17}`, 4); break;
+    }
+  });
+
+  // nose
+  front += s([
+    'M100 112 L72 133 L98 135',
+    'M102 108 Q120 128 100 135',
+    'M93 127 Q100 135 107 127',
+    'M100 110 L90 132 L108 132',
+    'M98 112 L132 129 L104 133'
+  ][a.nose], 4.5);
+
+  // mouth
+  switch (a.mouth) {
+    case 0: front += s('M84 148 Q100 160 116 148', 4.5); break;
+    case 1: front += s('M88 152 L112 152', 4.5); break;
+    case 2: front += `<rect x="80" y="143" width="40" height="17" rx="7" fill="#fff" stroke="${INK}" stroke-width="4"/>` + s('M80 151.5 H120 M90 143 V160 M100 143 V160 M110 143 V160', 3); break;
+    case 3: front += `<ellipse cx="100" cy="152" rx="5.5" ry="7" fill="${INK}"/>`; break;
+    case 4: front += s('M82 152 q4.5 -7 9 0 t9 0 t9 0 t9 0', 4); break;
+    case 5: front += s('M86 156 Q100 144 114 156', 4.5); break;
+    case 6: front += s('M86 150 Q106 156 117 141', 4.5); break;
+    case 7: front += `<clipPath id="${id}m"><path d="M76 142 Q100 178 124 142 Z"/></clipPath><path d="M76 142 Q100 178 124 142 Z" fill="${INK}"/><g clip-path="url(#${id}m)"><rect x="74" y="140" width="52" height="7" fill="#fff"/><ellipse cx="100" cy="164" rx="13" ry="8" fill="#F0614B"/></g>` + s('M76 142 Q100 178 124 142 Z', 4.5) + s('M72 139 Q76 140 77 144 M128 139 Q124 140 123 144', 3.5); break;
+  }
+
+  // extras
+  switch (a.extra) {
+    case 1: front += `<path d="M100 184 L83 174 L83 194 Z M100 184 L117 174 L117 194 Z" fill="${INK}"/><circle cx="100" cy="184" r="4" fill="${INK}"/>`; break;
+    case 2: front += `<circle cx="80" cy="108" r="16" fill="none" stroke="${INK}" stroke-width="4"/><circle cx="120" cy="108" r="16" fill="none" stroke="${INK}" stroke-width="4"/>` + s('M96 106 Q100 102 104 106', 4); break;
+    case 3: [[70,128],[75,124],[78,131],[122,128],[127,124],[130,131]].forEach(([x,y]) => front += `<circle cx="${x}" cy="${y}" r="2.2" fill="${INK}" opacity=".75"/>`); break;
+    case 4: front += `<path d="M78 142 Q100 126 122 142 Q111 148 100 140 Q89 148 78 142 Z" fill="${HC}"/>`; break;
+    case 5: if (showEars) front += `<circle cx="${L+2}" cy="133" r="6.5" fill="${INK}"/><circle cx="${R-2}" cy="133" r="6.5" fill="${INK}"/>`; else front += `<circle cx="72" cy="128" r="7" fill="#fff" opacity=".35"/><circle cx="128" cy="128" r="7" fill="#fff" opacity=".35"/>`; break;
+    case 6: front += `<ellipse cx="70" cy="128" rx="9" ry="6" fill="#fff" opacity=".35"/><ellipse cx="130" cy="128" rx="9" ry="6" fill="#fff" opacity=".35"/>`; break;
+  }
+
+  const bg = opts.noBg ? '' : `<rect width="200" height="200" fill="${PASTEL[a.bg]}"/>`;
+  const clip = shapes[a.shape].replace(/fill="[^"]*"/, '');
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <clipPath id="${id}c">${clip}</clipPath>
+      <filter id="${id}f" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="${a.seed % 97}"/><feDisplacementMap in="SourceGraphic" scale="3.2"/></filter>
+    </defs>
+    ${bg}<g filter="url(#${id}f)">${behind}${head}${front}</g></svg>`;
+}
+
+/* ============================================================
+   Data store — talks to our Cloudflare Worker at /api
+   ============================================================ */
+const state = { members: [], forfeits: [], log: [], start: 5, canWrite: true, live: true, loaded: false };
+const newId = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+let inflight = 0, lastJSON = '';
+
+async function api(path, method = 'GET', body) {
+  const res = await fetch('/api' + path, {
+    method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// Fetch everything from the server and redraw if anything changed
+async function refresh() {
+  try {
+    const data = await api('/state');
+    if (inflight) return; // don't overwrite changes that are still being saved
+    const json = JSON.stringify(data);
+    state.loaded = true; hideStatus();
+    if (json === lastJSON) return;
+    lastJSON = json;
+    Object.assign(state, { members: data.members, forfeits: data.forfeits, log: data.log, start: data.start });
+    render();
+  } catch (e) {
+    if (!state.loaded) { state.loaded = true; render(); }
+    showStatus('Can’t reach the server right now — retrying…');
+  }
+}
+
+// Every change: update the screen straight away, then save, then re-sync
+async function write(applyLocally, request) {
+  inflight++;
+  if (applyLocally) { applyLocally(); render(); }
+  try { await request(); }
+  finally { inflight--; lastJSON = ''; refresh(); }
+}
+
+const store = {
+  addMember: (m) => write(() => state.members.push(m), () => api('/members', 'POST', m)),
+  updateMember: (id, patch) => write(() => Object.assign(state.members.find(x => x.id === id) || {}, patch), () => api('/members/' + id, 'PATCH', patch)),
+  deleteMember: (id) => write(() => state.members = state.members.filter(x => x.id !== id), () => api('/members/' + id, 'DELETE')),
+  addForfeit: (text) => { const f = { id: newId(), text, createdAt: Date.now() }; return write(() => state.forfeits.push(f), () => api('/forfeits', 'POST', f)); },
+  deleteForfeit: (id) => write(() => state.forfeits = state.forfeits.filter(x => x.id !== id), () => api('/forfeits/' + id, 'DELETE')),
+  addLog: (icon, text) => { const e = { id: newId(), icon, text, at: Date.now() }; return write(() => state.log.unshift(e), () => api('/log', 'POST', e)); },
+  setStart: (n) => write(() => state.start = n, () => api('/settings', 'PUT', { start: n }))
+};
+
+async function safe(fn, msg) {
+  try { await fn(); return true; }
+  catch (e) { toast(msg || 'That didn’t save — try again.'); return false; }
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const tilt = (id) => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) | 0; return ((Math.abs(h) % 70) / 10 - 3.5).toFixed(1); };
+function memberPoints(m) { return clampInt(m.points ?? state.start, 0, 99); }
+
+function render() {
+  document.querySelectorAll('.write-only').forEach(el => el.hidden = !state.canWrite);
+  $('#start-val').textContent = state.start; $('#start-copy').textContent = state.start;
+  renderWall(); renderForfeits(); renderLog();
+}
+
+function renderWall() {
+  const wall = $('#wall');
+  if (!state.loaded && state.live && !state.members.length) { wall.innerHTML = '<div class="empty-note">Loading…</div>'; return; }
+  let html = '';
+  for (const m of state.members) {
+    const pts = memberPoints(m), bust = pts === 0, total = Math.max(state.start, pts);
+    const fr = fresh.get(m.id), isFresh = fr && Date.now() - fr.at < 1800;
+    let faces = '';
+    for (let i = 0; i < total; i++) {
+      const happy = i < pts, cls = happy ? 'happy' : 'sad';
+      const extra = isFresh && fr.idx === i ? (fr.dir < 0 ? ' fresh' : ' cheer') : '';
+      faces += `<button type="button" class="face-btn ${cls}${extra}" data-face="${esc(m.id)}" data-dir="${happy ? -1 : 1}" ${state.canWrite ? '' : 'disabled'} aria-label="${happy ? `Take a point off ${esc(m.name)}` : `Give ${esc(m.name)} a point back`}" title="${happy ? 'Take a point' : 'Give it back'}">${faceSVG(happy, cleanAvatar(m.avatar).skin, i, cleanAvatar(m.avatar).hairc)}</button>`;
+    }
+    const colour = PASTEL[cleanAvatar(m.avatar).bg];
+    let verdict = '';
+    if (bust && m.forfeit) verdict = `<div class="verdict"><b>Forfeit owed</b>${esc(m.forfeit)}${state.canWrite ? `<button class="btn small primary" data-done="${esc(m.id)}" type="button">Done it ✓</button>` : ''}</div>`;
+    else if (bust) verdict = `<div class="verdict"><b>Out of points!</b>Time to face the wheel.${state.canWrite ? `<button class="btn small primary" data-spin="${esc(m.id)}" type="button">Spin the wheel</button>` : ''}</div>`;
+    html += `<article class="piece${bust ? ' bust' : ''}" style="--r:${tilt(m.id)}deg;--tape-colour:${colour};--tr:${(-tilt(m.id) / 2).toFixed(1)}deg" data-edit="${esc(m.id)}" tabindex="0" aria-label="${esc(m.name)}, ${pts} points">
+      <span class="tape"></span>
+      <div class="photo">${avatarSVG(m.avatar)}</div>
+      <div class="strip">
+        <div class="name-row"><span class="dot" style="background:${colour}"></span><span class="nm">${esc(m.name)}</span><span class="pts"><b>${pts}/${state.start}</b></span></div>
+        <div class="faces">${faces}</div>
+        ${verdict}
+      </div>
+    </article>`;
+  }
+  if (state.canWrite) html += `<button class="add-card" type="button" id="add-card"><svg width="28" height="28" viewBox="0 0 20 20" style="margin:0 auto"><path d="M10 3.5v13M3.5 10h13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Add a designer</button>`;
+  else if (!state.members.length) html = '<div class="empty-note">No designers on the board yet.</div>';
+  wall.innerHTML = html;
+}
+
+function wheelSVG(items, size = 200, labels = true) {
+  const n = items.length, cx = 100, cy = 100, r = 98;
+  if (!n) return `<svg class="wheel" viewBox="0 0 200 200" width="${size}" height="${size}"><circle cx="100" cy="100" r="98" fill="#f5f4f7" stroke="#c9c8cd" stroke-dasharray="4 5"/><text x="100" y="105" text-anchor="middle" font-family="Instrument Sans" font-size="11" fill="#8e8d93">Add forfeits to fill me</text></svg>`;
+  let segs = '';
+  items.forEach((f, i) => {
+    const a0 = (i / n) * 2 * Math.PI - Math.PI / 2, a1 = ((i + 1) / n) * 2 * Math.PI - Math.PI / 2;
+    const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0), x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+    const large = a1 - a0 > Math.PI ? 1 : 0;
+    const d = n === 1 ? `M${cx} ${cy - r} A${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r} Z` : `M${cx} ${cy} L${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`;
+    segs += `<path d="${d}" fill="${PASTEL[i % PASTEL.length]}" stroke="#fff" stroke-width="1.5"/>`;
+    if (labels) {
+      const mid = (i + 0.5) / n * 360 - 90, t = f.text.length > 26 ? f.text.slice(0, 24) + '…' : f.text;
+      segs += `<text transform="rotate(${mid.toFixed(2)} 100 100) translate(${cx + r - 8} ${cy + 3})" text-anchor="end" font-family="Instrument Sans, sans-serif" font-size="${n > 10 ? 6 : 7}" font-weight="500" fill="#1c1b1f">${esc(t)}</text>`;
+    }
+  });
+  return `<svg class="wheel" viewBox="0 0 200 200" width="${size}" height="${size}">${segs}<circle cx="100" cy="100" r="98" fill="none" stroke="#fff" stroke-width="3"/></svg>`;
+}
+
+function renderForfeits() {
+  $('#mini-wheel').innerHTML = wheelSVG(state.forfeits, 200, false);
+  $('#flist').innerHTML = state.forfeits.map((f, i) => `<li><span class="sw" style="background:${PASTEL[i % PASTEL.length]}"></span><span class="t">${esc(f.text)}</span>${state.canWrite ? `<button class="x" type="button" data-delf="${esc(f.id)}" aria-label="Remove ${esc(f.text)}">×</button>` : ''}</li>`).join('');
+  $('#starters').hidden = !state.canWrite || state.forfeits.length > 0 || (state.live && !state.loaded);
+  const n = state.forfeits.length;
+  $('#wheel-hint').textContent = n ? `${n} forfeit${n === 1 ? '' : 's'} on the wheel. Run out of points and you spin.` : 'Nothing on the wheel yet — add a few forfeits.';
+}
+
+function renderLog() {
+  const items = state.log.slice(0, 25);
+  $('#log').innerHTML = items.length ? items.map(e => `<li><span class="ic">${esc(e.icon || '•')}</span><span>${esc(e.text)}<span class="when">${ago(e.at)}</span></span></li>`).join('')
+    : '<li style="display:block;color:var(--muted)">Nothing yet. Log your first session after the next ceremony.</li>';
+}
+function ago(t) {
+  const s = (Date.now() - Number(t)) / 1000;
+  if (!Number.isFinite(s)) return '';
+  if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + ' min ago'; if (s < 86400) return Math.floor(s / 3600) + ' h ago';
+  return new Date(Number(t)).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+/* ============================================================
+   Modals
+   ============================================================ */
+function openModal(html, cls = '') {
+  const root = $('#modal-root');
+  root.innerHTML = `<div class="scrim"><div class="modal ${cls}" role="dialog" aria-modal="true">${html}</div></div>`;
+  const scrim = root.firstElementChild;
+  scrim.addEventListener('mousedown', e => { if (e.target === scrim && !scrim.dataset.locked) closeModal(); });
+  const first = scrim.querySelector('input, button'); if (first) setTimeout(() => first.focus(), 30);
+  return scrim.firstElementChild;
+}
+function closeModal() { $('#modal-root').innerHTML = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { const s = $('.scrim'); if (s && !s.dataset.locked) closeModal(); $('#title-menu').hidden = true; $('#title-btn').setAttribute('aria-expanded', 'false'); } });
+
+/* ---- Smiley points ---- */
+const fresh = new Map(); const pending = new Set();
+function faceSVG(happy, skinIdx = 1, n = 0, hairIdx = 0) {
+  const HC = HAIR[clampInt(hairIdx, 0, HAIR.length - 1)];
+  // Mini heads in the same hand-made style as the avatars: flat colour, no outline, grain, wobbly ink
+  const id = 'fc' + (++uid), rand = rng(n * 7919 + (happy ? 1 : 2));
+  const fill = happy ? FACE[clampInt(skinIdx, 0, FACE.length - 1)] : '#A8D0D8';
+  const shapes = [
+    `<circle cx="20" cy="21" r="14"/>`,
+    `<rect x="6.5" y="7.5" width="27" height="27.5" rx="9"/>`,
+    `<path d="M20 6.5 C11 6.5 7 13 7 21 C7 30 12 35.5 20 35.5 C28 35.5 33 30 33 21 C33 13 29 6.5 20 6.5 Z"/>`
+  ];
+  const head = shapes[n % 3];
+  let speck = '';
+  for (let i = 0; i < 6; i++) speck += `<circle cx="${(10 + rand() * 20).toFixed(1)}" cy="${(11 + rand() * 20).toFixed(1)}" r="${(.4 + rand() * .5).toFixed(2)}" fill="#fff" opacity=".45"/>`;
+  const ln = (d, w = 2.2) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const hair = [ln('M16.5 7.8v3.4 M20 7.2v3.6 M23.5 7.8v3.4', 1.6).replace(INK, HC), `<path d="M8 15 Q8 5.5 20 5.5 Q32 5.5 32 15 Q26 10 20 11 Q14 10 8 15Z" fill="${HC}"/>`, ''][(n + 1) % 3];
+  const ears = `<circle cx="6.2" cy="21.5" r="3.4" fill="${fill}"/><circle cx="33.8" cy="21.5" r="3.4" fill="${fill}"/>`;
+  const face = happy
+    ? `<circle cx="15" cy="18.2" r="1.9" fill="${INK}"/><circle cx="25" cy="18.2" r="1.9" fill="${INK}"/>` + ln('M20.5 18.5 L16.8 23.6 L20.6 24', 1.8) + ln('M13.2 26.2 Q20 32.6 26.8 26.2', 2.3) +
+      `<ellipse cx="11" cy="24.5" rx="2.2" ry="1.4" fill="#fff" opacity=".35"/><ellipse cx="29" cy="24.5" rx="2.2" ry="1.4" fill="#fff" opacity=".35"/>`
+    : ln('M11.8 14.6 L16.6 16.2 M28.2 14.6 L23.4 16.2', 1.8) + `<circle cx="15" cy="19.4" r="1.7" fill="${INK}"/><circle cx="25" cy="19.4" r="1.7" fill="${INK}"/>` +
+      ln('M20.5 19.6 L17.2 24 L20.6 24.4', 1.6) + ln('M14.2 30.4 Q20 25.4 25.8 30.4', 2.3) +
+      `<path class="tear" d="M13.6 21.4 q-2.4 3.4 0 4.9 q2.4 -1.5 0 -4.9z" fill="#3b82f6"/>`;
+  return `<svg viewBox="1 2.5 38 37" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs><clipPath id="${id}c">${head}</clipPath><filter id="${id}f" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="2" seed="${n + (happy ? 3 : 11)}"/><feDisplacementMap in="SourceGraphic" scale="1.3"/></filter></defs>
+    <g filter="url(#${id}f)">${ears}<g fill="${fill}">${head}</g>${hair}${face}</g></svg>`;
+}
+const OUCH = [
+  'Not the face!', 'I was on a client call, I swear', 'Calendar invite? Never heard of her.', 'Bold of you.',
+  'Tell my mum I love her', 'My dog ate my calendar', 'This feels personal', 'Snitch.', 'I was there in spirit!',
+  'Wi-Fi was down. For 3 hours.', 'Who made this app?!', 'Noooooo', 'I’ll remember this.', 'Worth it.',
+  'Can I offer you a biscuit instead?', 'Objection!', 'That one stung', 'It was on mute, I was listening!',
+  'I thought it was optional', 'Pixel-pushing emergency', 'Oof. Right in the Figma.'
+];
+const LAST = ['Wheel time. Gulp.', 'I regret everything', 'Spin the wheel of doom!', 'Rock bottom. Hi.', 'Please be the biscuits one'];
+const REDEEM = ['Redemption arc!', 'Back from the dead', 'Character development', 'Smile restored', 'Forgiven… for now'];
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+let audio = null, soundOn = true;
+try { soundOn = localStorage.getItem('showup-sound') !== 'off'; } catch (e) {}
+function tone(seq, type = 'sawtooth', vib = false) {
+  if (!soundOn) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = audio.currentTime + .02, out = audio.createGain(), lp = audio.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 1400; out.gain.value = .07; lp.connect(out); out.connect(audio.destination);
+    let t = t0;
+    seq.forEach(([f, d], i) => {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t);
+      if (vib && i === seq.length - 1) { const l = audio.createOscillator(), lg = audio.createGain(); l.frequency.value = 6; lg.gain.value = 9; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + d); o.frequency.linearRampToValueAtTime(f * .94, t + d); }
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + .03); g.gain.setValueAtTime(1, t + d - .06); g.gain.linearRampToValueAtTime(0, t + d);
+      o.connect(g); g.connect(lp); o.start(t); o.stop(t + d + .02); t += d;
+    });
+  } catch (e) {}
+}
+const wahwah = () => tone([[311, .28], [294, .28], [277, .28], [262, .75]], 'sawtooth', true);
+const boop = () => tone([[330, .1], [262, .22]], 'square');
+const ding = () => tone([[523, .1], [784, .22]], 'triangle');
+function bubble(rect, text) {
+  const b = document.createElement('div'); b.className = 'bubble'; b.textContent = text;
+  b.style.left = (rect.left + rect.width / 2) + 'px'; b.style.top = (rect.top - 10) + 'px';
+  document.body.appendChild(b); setTimeout(() => b.remove(), 2200);
+}
+function floaty(rect, text, colour) {
+  const f = document.createElement('div'); f.className = 'floaty'; f.textContent = text; f.style.color = colour;
+  f.style.left = (rect.left + rect.width / 2) + 'px'; f.style.top = rect.top + 'px';
+  document.body.appendChild(f); setTimeout(() => f.remove(), 1200);
+}
+async function bump(btn) {
+  const id = btn.dataset.face, dir = Number(btn.dataset.dir);
+  const m = state.members.find(x => x.id === id);
+  if (!m || !state.canWrite || pending.has(id)) return;
+  const before = memberPoints(m), after = clampInt(before + dir, 0, 20);
+  if (after === before) return;
+  pending.add(id);
+  const rect = btn.getBoundingClientRect();
+  if (dir < 0) {
+    btn.classList.add('ouch');
+    bubble(rect, after === 0 ? pick(LAST) : pick(OUCH));
+    floaty(rect, '−1', '#e68b7f');
+    after === 0 ? wahwah() : boop();
+    fresh.set(id, { idx: after, dir, at: Date.now() });
+    await new Promise(r => setTimeout(r, 420));
+  } else {
+    bubble(rect, pick(REDEEM)); floaty(rect, '+1', '#3DBA6F'); ding();
+    fresh.set(id, { idx: before, dir, at: Date.now() });
+  }
+  const patch = { points: after }; if (after > 0 && m.forfeit) patch.forfeit = null;
+  const ok = await safe(() => store.updateMember(id, patch));
+  pending.delete(id);
+  if (!ok) return;
+  if (dir < 0 && after === 0) {
+    const card = document.querySelector(`.piece[data-edit="${CSS.escape(id)}"]`);
+    if (card) card.classList.add('shake');
+    await safe(() => store.addLog('💀', `${m.name} lost their last point — wheel time`));
+  } else {
+    await safe(() => store.addLog(dir < 0 ? '😢' : '😊', dir < 0 ? `${m.name} lost a point (${after} left)` : `${m.name} got a point back`));
+  }
+}
+
+/* ---- Designer + avatar maker ---- */
+function openDesigner(member) {
+  const editing = !!member;
+  let av = editing ? cleanAvatar(member.avatar) : randomAvatar();
+  let pts = editing ? memberPoints(member) : state.start;
+  const m = openModal(`
+    <h3>${editing ? 'Edit designer' : 'Add a designer'}</h3>
+    <p class="hint">Shuffle until it feels like you, then fine-tune each bit.</p>
+    <div class="maker">
+      <div class="maker-preview">
+        <div class="frame"><div class="photo" id="pv"></div></div>
+        <button class="btn" type="button" id="shuffle">🎲&nbsp; Shuffle</button>
+      </div>
+      <div>
+        <label class="field">Name<input type="text" id="nm" maxlength="40" value="${esc(member ? member.name : '')}" placeholder="e.g. Ben"></label>
+        <div class="parts" id="parts">${Object.keys(PARTS).map(k => `<div class="part">${PART_LABELS[k]}<span class="arrows"><button type="button" data-part="${k}" data-d="-1" aria-label="Previous ${PART_LABELS[k]}">‹</button><button type="button" data-part="${k}" data-d="1" aria-label="Next ${PART_LABELS[k]}">›</button></span></div>`).join('')}</div>
+        <div class="field" style="margin-top:16px">Hair colour<div class="swatches" id="hairc"></div></div>
+        <div class="field">Face colour<div class="swatches" id="skin"></div></div>
+        <div class="field">Background<div class="swatches" id="bgs"></div></div>
+        ${editing ? `<div class="field">Points<span><span class="stepper"><button type="button" data-pts="-1" aria-label="Take a point">−</button><span id="ptsv">${pts}</span><button type="button" data-pts="1" aria-label="Give a point back">+</button></span></span></div>` : ''}
+      </div>
+    </div>
+    <div class="actions">
+      ${editing ? '<button class="btn ghost danger left" type="button" id="del">Remove</button>' : ''}
+      <button class="btn ghost" type="button" id="cancel">Cancel</button>
+      <button class="btn primary" type="button" id="save">${editing ? 'Save' : 'Add to board'}</button>
+    </div>`, 'wide');
+  const paint = () => {
+    m.querySelector('#pv').innerHTML = avatarSVG(av);
+    m.querySelector('#hairc').innerHTML = HAIR.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-hairc="${i}" aria-pressed="${i === av.hairc}" aria-label="Hair colour ${i + 1}"></button>`).join('');
+    m.querySelector('#skin').innerHTML = FACE.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-skin="${i}" aria-pressed="${i === av.skin}" aria-label="Face colour ${i + 1}"></button>`).join('');
+    m.querySelector('#bgs').innerHTML = PASTEL.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-bg="${i}" aria-pressed="${i === av.bg}" aria-label="Background ${i + 1}"></button>`).join('');
+    const pv = m.querySelector('#ptsv'); if (pv) pv.textContent = pts;
+  };
+  paint();
+  if (!state.canWrite) m.querySelectorAll('#save, #del').forEach(b => b.hidden = true);
+  m.addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'shuffle') { av = randomAvatar(); paint(); }
+    else if (b.dataset.part) { const k = b.dataset.part; av[k] = (av[k] + Number(b.dataset.d) + PARTS[k]) % PARTS[k]; paint(); }
+    else if (b.dataset.hairc) { av.hairc = Number(b.dataset.hairc); paint(); }
+    else if (b.dataset.skin) { av.skin = Number(b.dataset.skin); paint(); }
+    else if (b.dataset.bg) { av.bg = Number(b.dataset.bg); paint(); }
+    else if (b.dataset.pts) { pts = clampInt(pts + Number(b.dataset.pts), 0, 20); paint(); }
+    else if (b.id === 'cancel') closeModal();
+    else if (b.id === 'del') {
+      if (b.dataset.sure) { closeModal(); await safe(() => store.deleteMember(member.id)); }
+      else { b.dataset.sure = 1; b.textContent = 'Really remove?'; }
+    }
+    else if (b.id === 'save') {
+      const name = m.querySelector('#nm').value.trim();
+      if (!name) { m.querySelector('#nm').focus(); return; }
+      b.disabled = true;
+      if (editing) {
+        const patch = { name, avatar: av };
+        if (pts !== memberPoints(member)) { patch.points = pts; if (pts > 0) patch.forfeit = null; }
+        const ok = await safe(() => store.updateMember(member.id, patch));
+        if (ok && patch.points !== undefined) await safe(() => store.addLog(pts > memberPoints(member) ? '✨' : '📌', `${name} now has ${pts} point${pts === 1 ? '' : 's'}`));
+      } else {
+        const ok = await safe(() => store.addMember({ id: newId(), name, avatar: av, points: state.start, forfeit: null, createdAt: Date.now() }));
+        if (ok) await safe(() => store.addLog('👋', `${name} joined the board`));
+      }
+      closeModal();
+    }
+  });
+}
+
+/* ---- Log a session ---- */
+const CEREMONIES = ['WAYWO', 'Design crit', 'Team meeting', 'Research share-back', 'Retro', 'Design social'];
+function openLog() {
+  if (!state.members.length) { toast('Add some designers first.'); return; }
+  const marks = {}; state.members.forEach(m => marks[m.id] = 'here');
+  const today = new Date().toISOString().slice(0, 10);
+  const m = openModal(`
+    <h3>Log a session</h3>
+    <p class="hint">Mark anyone who didn’t make it. Excused (holiday, sick, client emergency) doesn’t cost a point.</p>
+    <div class="field-row">
+      <label class="field">Ceremony<select id="cer">${CEREMONIES.map(c => `<option>${c}</option>`).join('')}<option value="__other">Something else…</option></select></label>
+      <label class="field">Date<input type="date" id="dt" value="${today}"></label>
+    </div>
+    <label class="field" id="other-wrap" hidden>What was it?<input type="text" id="other" maxlength="40"></label>
+    <div class="roll" id="roll">${state.members.map(mm => `
+      <div class="roll-row"><span class="face">${avatarSVG(mm.avatar)}</span><span class="nm">${esc(mm.name)}</span>
+        <span class="seg" role="group" aria-label="${esc(mm.name)}">
+          <button type="button" data-who="${esc(mm.id)}" data-v="here" aria-pressed="true">Here</button>
+          <button type="button" data-who="${esc(mm.id)}" data-v="excused" aria-pressed="false">Excused</button>
+          <button type="button" class="miss" data-who="${esc(mm.id)}" data-v="missed" aria-pressed="false">Missed</button>
+        </span></div>`).join('')}</div>
+    <div class="actions"><button class="btn ghost" type="button" id="cancel">Cancel</button><button class="btn primary" type="button" id="save">Save session</button></div>`);
+  m.querySelector('#cer').addEventListener('change', e => { m.querySelector('#other-wrap').hidden = e.target.value !== '__other'; });
+  m.addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.who) { marks[b.dataset.who] = b.dataset.v; b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); }
+    else if (b.id === 'cancel') closeModal();
+    else if (b.id === 'save') {
+      b.disabled = true;
+      let cer = m.querySelector('#cer').value; if (cer === '__other') cer = m.querySelector('#other').value.trim() || 'Team session';
+      const missed = state.members.filter(mm => marks[mm.id] === 'missed');
+      const busted = [];
+      for (const mm of missed) {
+        const before = memberPoints(mm), after = Math.max(0, before - 1);
+        if (after !== before) await safe(() => store.updateMember(mm.id, { points: after }));
+        if (before > 0 && after === 0) busted.push(mm.name);
+      }
+      const here = state.members.length - missed.length - Object.values(marks).filter(v => v === 'excused').length;
+      await safe(() => store.addLog(missed.length ? '📉' : '🌟', missed.length ? `${cer}: ${missed.map(x => x.name).join(', ')} missed it (−1 point)` : `${cer}: full house! ${here} showed up`));
+      for (const n of busted) await safe(() => store.addLog('💀', `${n} is out of points — wheel time`));
+      closeModal();
+      if (!missed.length) confetti();
+      else toast(busted.length ? `${busted.join(' & ')} ${busted.length > 1 ? 'are' : 'is'} out of points!` : 'Session logged.');
+    }
+  });
+}
+
+/* ---- Spin ---- */
+function openSpin(member) {
+  if (!state.forfeits.length) { toast('Add some forfeits to the wheel first.'); return; }
+  const items = state.forfeits.slice();
+  const m = openModal(`
+    <h3>${esc(member.name)}, face the wheel</h3>
+    <p class="hint">Whatever it lands on, you do. No take-backs.</p>
+    <div class="spin-wrap">
+      <svg class="pointer" viewBox="0 0 34 44"><path d="M17 42 L3 10 A15 15 0 1 1 31 10 Z" fill="#1c1b1f"/><circle cx="17" cy="14" r="5" fill="#fff"/></svg>
+      <div id="wheel-holder" style="width:100%;height:100%">${wheelSVG(items, '100%')}</div>
+      <div class="hub">${avatarSVG(member.avatar, { noBg: false })}</div>
+    </div>
+    <div class="result" id="res"><button class="btn primary" type="button" id="go">Spin it</button></div>
+    <div class="actions"><button class="btn ghost" type="button" id="cancel">Not now</button></div>`);
+  const wheel = m.querySelector('svg.wheel'); wheel.style.width = '100%'; wheel.style.height = '100%';
+  m.addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'cancel') closeModal();
+    if (b.id !== 'go') return;
+    $('.scrim').dataset.locked = 1; m.querySelector('#cancel').hidden = true;
+    const n = items.length, i = Math.floor(Math.random() * n), seg = 360 / n;
+    const jitter = (Math.random() - 0.5) * seg * 0.7;
+    const rot = 360 * 7 + (360 - (i * seg + seg / 2)) + jitter;
+    m.querySelector('#res').innerHTML = '<div class="label">Spinning…</div>';
+    requestAnimationFrame(() => { wheel.style.transform = `rotate(${rot}deg)`; });
+    let landed = false;
+    const land = async () => {
+      if (landed) return; landed = true;
+      const f = items[i];
+      m.querySelector('#res').className = 'result show';
+      m.querySelector('#res').innerHTML = `<div class="label">${esc(member.name)} has to…</div><div class="what">${esc(f.text)}</div><div class="actions" style="justify-content:center"><button class="btn primary" type="button" id="ok">Fair enough</button></div>`;
+      confetti();
+      await safe(() => store.updateMember(member.id, { forfeit: f.text }));
+      await safe(() => store.addLog('🎡', `${member.name} spun: “${f.text}”`));
+      delete $('.scrim').dataset.locked;
+      m.querySelector('#ok').addEventListener('click', closeModal);
+    };
+    wheel.addEventListener('transitionend', land, { once: true });
+    setTimeout(land, 5600);
+  });
+}
+
+async function forfeitDone(member) {
+  const ok = await safe(() => store.updateMember(member.id, { forfeit: null, points: state.start }));
+  if (ok) { await safe(() => store.addLog('✅', `${member.name} did the forfeit and is back on ${state.start} points`)); confetti(); }
+}
+
+function openHow() {
+  const m = openModal(`
+    <h3>How it works</h3>
+    <p class="hint" style="font-size:16px;line-height:1.55;color:var(--ink)">
+      Everyone starts the season with <b>${state.start} points</b>.<br><br>
+      After each team ceremony — WAYWO, crits, team meetings, share-backs — someone hits <b>Log a session</b> and marks who missed it. Each miss takes a point. Holidays, sickness and genuine client emergencies are <b>excused</b> and cost nothing.<br><br>
+      Lose your last pin and you spin the <b>forfeit wheel</b>. Do the forfeit, hit <b>Done it</b>, and you’re back on a full set.<br><br>
+      Anyone can add forfeits to the wheel — keep them fun, not mean. Click a smiley on someone’s card to take a point off them (they won’t be happy about it). Click a sad face to give it back. Click the card itself to change the avatar.
+    </p>
+    <div class="actions"><button class="btn primary" type="button" id="ok">Got it</button></div>`);
+  m.querySelector('#ok').addEventListener('click', closeModal);
+}
+
+function openNewSeason() {
+  const m = openModal(`
+    <h3>Start a new season?</h3>
+    <p class="hint">Everyone goes back to ${state.start} points and any owed forfeits are wiped. The wheel stays as it is.</p>
+    <div class="actions"><button class="btn ghost" type="button" id="cancel">Cancel</button><button class="btn primary" type="button" id="go">New season</button></div>`);
+  m.addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'cancel') closeModal();
+    if (b.id === 'go') {
+      b.disabled = true;
+      for (const mm of state.members) await safe(() => store.updateMember(mm.id, { points: state.start, forfeit: null }));
+      await safe(() => store.addLog('🌱', `New season — everyone back on ${state.start} points`));
+      closeModal(); confetti();
+    }
+  });
+}
+
+/* ============================================================
+   Bits and bobs
+   ============================================================ */
+let toastTimer;
+function toast(msg) {
+  let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 3200);
+}
+function showStatus(msg) { const s = $('#status'); s.textContent = msg; s.hidden = false; }
+function hideStatus() { $('#status').hidden = true; }
+function confetti() {
+  const c = document.createElement('div'); c.className = 'confetti';
+  for (let i = 0; i < 70; i++) {
+    const p = document.createElement('i');
+    p.style.left = Math.random() * 100 + 'vw'; p.style.background = (i % 2 ? FACE : PASTEL)[i % 8];
+    p.style.animationDuration = (1.6 + Math.random() * 1.6) + 's'; p.style.animationDelay = Math.random() * .4 + 's';
+    p.style.transform = `rotate(${Math.random() * 360}deg)`; c.appendChild(p);
+  }
+  document.body.appendChild(c); setTimeout(() => c.remove(), 3800);
+}
+const STARTERS = [
+  'Bring treats to the next team session',
+  'Make the team brews for a day',
+  'Present your next WAYWO in rhyme',
+  'Host the next team quiz',
+  'Wear a silly hat on the next team call',
+  'Share your oldest portfolio piece',
+  'Run a 5-min “design crimes” show & tell',
+  'One slide in Comic Sans at your next playback'
+];
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('button, [data-edit]'); if (!b) return;
+  if (b.id === 'title-btn') { const menu = $('#title-menu'); menu.hidden = !menu.hidden; b.setAttribute('aria-expanded', !menu.hidden); return; }
+  if (!e.target.closest('.title-picker')) { $('#title-menu').hidden = true; $('#title-btn').setAttribute('aria-expanded', 'false'); }
+  if (b.dataset.start && state.canWrite) { const n = clampInt(state.start + Number(b.dataset.start), 1, 12); if (n !== state.start) await safe(() => store.setStart(n)); return; }
+  if (b.id === 'new-season') { if (state.canWrite) openNewSeason(); return; }
+  if (b.id === 'how') { openHow(); return; }
+  if (b.id === 'add-designer' || b.id === 'add-card') { openDesigner(null); return; }
+  if (b.id === 'log-btn') { openLog(); return; }
+  if (b.id === 'starters') { b.disabled = true; for (const t of STARTERS) await safe(() => store.addForfeit(t)); return; }
+  if (b.dataset.delf) { await safe(() => store.deleteForfeit(b.dataset.delf)); return; }
+  if (b.dataset.face) { e.stopPropagation(); bump(b); return; }
+  if (b.id === 'sound') { soundOn = !soundOn; try { localStorage.setItem('showup-sound', soundOn ? 'on' : 'off'); } catch (er) {} b.textContent = `Sound effects: ${soundOn ? 'on' : 'off'}`; if (soundOn) ding(); return; }
+  if (b.dataset.spin) { e.stopPropagation(); const mm = state.members.find(x => x.id === b.dataset.spin); if (mm) openSpin(mm); return; }
+  if (b.dataset.done) { e.stopPropagation(); const mm = state.members.find(x => x.id === b.dataset.done); if (mm) forfeitDone(mm); return; }
+  if (b.dataset.edit && !$('.scrim')) { const mm = state.members.find(x => x.id === b.dataset.edit); if (mm) openDesigner(mm); }
+});
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.edit) { e.preventDefault(); e.target.click(); } });
+$('#f-form').addEventListener('submit', async e => {
+  e.preventDefault(); const inp = $('#f-input'), t = inp.value.trim(); if (!t) return;
+  inp.value = ''; await safe(() => store.addForfeit(t));
+});
+
+render();
+$('#sound').textContent = `Sound effects: ${soundOn ? 'on' : 'off'}`;
+refresh();
+// Check for other people's changes every 4 seconds while the tab is open
+setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 4000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(); });
+</script>
+</body>
+</html>
