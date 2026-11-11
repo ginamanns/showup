@@ -171,9 +171,12 @@ input[type=text], input[type=date], input[type=number], select {
   flex: 1; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid #c9c8cd; border-radius: 12px; font: 15px var(--sans); background: var(--page); color: var(--ink);
 }
 .log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow: auto; }
-.log li { font-size: 14px; line-height: 1.4; display: grid; grid-template-columns: 22px 1fr; gap: 8px; }
+.log li { font-size: 14px; line-height: 1.4; display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; }
 .log .when { display: block; color: var(--muted); font-size: 12px; }
-.log .ic { font-size: 15px; }
+.log .ic { width: 22px; height: 22px; display: block; }
+.log .ic svg { width: 100%; height: 100%; display: block; }
+.btn-ic { width: 24px; height: 24px; display: inline-block; flex: none; }
+.btn-ic svg { width: 100%; height: 100%; display: block; }
 
 /* ---- Modals ---- */
 .scrim { position: fixed; inset: 0; z-index: 50; background: rgba(28,27,31,.32); display: grid; place-items: center; padding: 16px; }
@@ -182,6 +185,17 @@ input[type=text], input[type=date], input[type=number], select {
   box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 20px 50px rgba(0,0,0,.2); animation: pop .22s cubic-bezier(.2,1.3,.4,1) both;
 }
 .modal.wide { width: min(760px, 100%); }
+.modal.xwide { width: min(1120px, 100%); padding: 30px 34px; }
+.modal.xwide .maker { grid-template-columns: 320px 1fr; gap: 36px; }
+.modal.xwide .parts { grid-template-columns: repeat(3, 1fr); }
+.modal.xwide .maker-preview { position: sticky; top: 0; align-self: start; }
+.mk-section { margin-top: 18px; }
+.mk-title { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font: 26px/1.1 var(--serif); font-weight: 400; }
+.pet-section { margin-top: 26px; padding: 20px; border-radius: 18px; background: #fbf7f1; box-shadow: inset 0 0 0 1px #efe6d8; }
+.pet-section .part { background: #fff; }
+.pet-section .colour-cols { margin-top: 16px; }
+.modal.xwide .colour-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; margin-top: 16px; }
+@media (max-width: 900px) { .modal.xwide .maker { grid-template-columns: 1fr; } .modal.xwide .parts { grid-template-columns: 1fr 1fr; } .modal.xwide .colour-cols { grid-template-columns: 1fr; } }
 @keyframes pop { from { transform: scale(.94); opacity: 0; } }
 .modal h3 { font: 34px/1.1 var(--serif); font-weight: 400; margin: 0 0 6px; }
 .modal .hint { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
@@ -196,6 +210,21 @@ input[type=text], input[type=date], input[type=number], select {
 .roll { display: flex; flex-direction: column; gap: 4px; }
 .roll-row { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 4px; border-radius: 12px; }
 .roll-row:hover { background: var(--canvas); }
+.me-chip { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px 0 4px; border: none; border-radius: var(--radius); background: none; font: 22px var(--serif); cursor: pointer; color: var(--ink); }
+.me-chip:hover { background: var(--canvas); }
+.me-chip .mini { width: 36px; height: 36px; border-radius: 12px; overflow: hidden; flex: none; }
+.me-chip .mini.empty { display: grid; place-items: center; background: var(--canvas); font: 600 18px var(--sans); color: var(--muted); }
+.me-chip small { font: 13px var(--sans); color: var(--muted); }
+.who-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+.who-grid button { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px; border: 2px solid transparent; border-radius: 16px; background: var(--canvas); cursor: pointer; font: 600 14px var(--sans); }
+.who-grid button:hover { border-color: var(--accent); background: #fff; }
+.who-grid .face { width: 72px; height: 72px; border-radius: 14px; overflow: hidden; }
+.reasons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.reasons button { padding: 9px 14px; border: 1px solid #c9c8cd; border-radius: 999px; background: #fff; font: 500 14px var(--sans); cursor: pointer; }
+.reasons button:hover { background: var(--canvas); }
+.reasons button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+.reason-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+.reason-head .face { width: 56px; height: 56px; border-radius: 14px; overflow: hidden; flex: none; }
 .roll-row .face { width: 40px; height: 40px; border-radius: 12px; overflow: hidden; flex: none; }
 .roll-row .nm { flex: 1; font-weight: 500; }
 .seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--canvas); border-radius: 12px; }
@@ -211,6 +240,7 @@ input[type=text], input[type=date], input[type=number], select {
 .maker-preview .photo { border-radius: 2px; }
 .maker-preview .btn { width: 100%; justify-content: center; margin-top: 18px; }
 .parts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+.part b { font-weight: 600; }
 .part { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 4px 4px 12px; border-radius: 12px; background: var(--canvas); font: 500 14px var(--sans); }
 .part .arrows { display: flex; }
 .part button { border: none; background: none; width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 16px; }
@@ -267,14 +297,7 @@ input[type=text], input[type=date], input[type=number], select {
     </div>
   </div>
   <div class="bar-right">
-    <button class="btn ghost write-only" id="add-designer" type="button">
-      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3.5v13M3.5 10h13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      <span class="lbl">Add designer</span>
-    </button>
-    <button class="btn primary write-only" id="log-btn" type="button">
-      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="lbl">Log a session</span>
-    </button>
+    <button class="me-chip" id="me-btn" type="button" title="Change who you are"></button>
   </div>
 </header>
 
@@ -313,11 +336,11 @@ input[type=text], input[type=date], input[type=number], select {
    Avatar maker — original chunky heads, bold ink lines
    ============================================================ */
 const INK = '#1c1b1f';
-const FACE = ['#F0614B','#F7C23E','#3DBA6F','#F4A3C8','#7B92CF','#F59A30','#A8D0D8','#D2559A'];
-const HAIR = ['#1c1b1f','#4A2F24','#8A5A3B','#D9672E','#E8C25E','#B9B6BF','#F08FB8','#5B7FD1'];
+const FACE = ['#F0614B','#F7C23E','#3DBA6F','#F4A3C8','#7B92CF','#F59A30','#A8D0D8','#D2559A','#F2C9A0','#D9A06B','#A86F4C','#B7D86A','#B49BE0'];
+const HAIR = ['#1c1b1f','#4A2F24','#8A5A3B','#D9672E','#E8C25E','#B9B6BF','#F08FB8','#5B7FD1','#F4F1EA','#3DBA6F','#8E6BD0'];
 const PASTEL = ['#BAC5A3','#A2BBC4','#F2D29F','#EC9C91','#B4ABC7','#A7C6BE','#DED6C5','#C8B6BE'];
-const PARTS = { shape: 6, hair: 10, fringe: 4, eyes: 6, nose: 5, mouth: 8, extra: 7 };
-const PART_LABELS = { shape: 'Head', hair: 'Hair', fringe: 'Fringe', eyes: 'Eyes', nose: 'Nose', mouth: 'Mouth', extra: 'Extra' };
+const PARTS = { shape: 6, hair: 18, fringe: 4, hat: 14, eyes: 9, nose: 5, mouth: 10, extra: 11, pet: 8 };
+const PART_LABELS = { shape: 'Head', hair: 'Hair', fringe: 'Fringe', hat: 'Hat', eyes: 'Eyes', nose: 'Nose', mouth: 'Mouth', extra: 'Extra', pet: 'Pet' };
 let uid = 0;
 
 function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -325,15 +348,191 @@ function randomAvatar() {
   const r = Math.random, a = {};
   for (const k in PARTS) a[k] = Math.floor(r() * PARTS[k]);
   a.fringe = r() < .55 ? 0 : 1 + Math.floor(r() * 3);
+  a.hat = r() < .55 ? 0 : 1 + Math.floor(r() * (PARTS.hat - 1));
+  a.pet = r() < .6 ? 0 : 1 + Math.floor(r() * (PARTS.pet - 1));
+  a.hatc = Math.floor(r() * FACE.length);
+  a.breed = Math.floor(r() * BREEDS[a.pet].length);
+  if (a.pet === 1 && r() < .5) a.breed = Math.floor(r() * BREEDS[1].length);
+  [a.petc, a.petm] = petDefaults(a.pet, a.breed);
+  if (r() < .3) { const pal = petPalette(a.pet); a.petc = pal[Math.floor(r() * pal.length)]; }
+  a.petacc = hasMarkings(a.pet) && r() < .35 ? 1 + Math.floor(r() * (PET_ACC.length - 1)) : 0;
+  a.petaccc = Math.floor(r() * FACE.length);
   a.hairc = r() < .55 ? 0 : Math.floor(r() * HAIR.length);
   a.skin = Math.floor(r() * FACE.length); a.bg = Math.floor(r() * PASTEL.length); a.seed = Math.floor(r() * 1e9);
   return a;
 }
+const PET_NAMES = ['None', 'Dog', 'Cat', 'Bunny', 'Frog', 'Bird', 'Hamster', 'Fish'];
+const BREEDS = [[''],
+  ['Floppy-eared', 'Husky', 'Pug', 'Dalmatian', 'Poodle', 'Sausage dog', 'Scottie', 'Frenchie', 'Scruffy', 'Cockapoo', 'Golden retriever', 'Beagle', 'Border collie', 'Corgi', 'Staffie', 'Jack Russell', 'Spaniel', 'Shih Tzu', 'Chihuahua', 'Whippet', 'Bulldog', 'Dachshund', 'Samoyed', 'Shaggy lurcher'],
+  ['Tabby', 'Plain', 'Tuxedo', 'Calico', 'Sphynx', 'Fluffy'],
+  ['Classic', 'Lop-eared', 'Dutch'],
+  ['Classic', 'Spotty', 'Frog prince'],
+  ['Macaw', 'Budgie', 'Cockatoo', 'Toucan'],
+  ['Classic', 'Snack cheeks', 'Guinea pig'],
+  ['Goldfish', 'Clownfish', 'Pufferfish']];
+// 0 tan, 1 golden, 2 brown, 3 dark brown, 4 white, 5 grey, 6 orange, 7 green, 8 red, 9 blue, 10 pink, 11 purple, 12 black, 13 cream, 14 ginger
+const PETC = ['#D9A06B', '#E8C25E', '#8A5A3B', '#4A2F24', '#F4F1EA', '#B9B6BF', '#F59A30', '#3DBA6F', '#F0614B', '#7B92CF', '#F4A3C8', '#B49BE0', '#2E2A2B', '#F2DDB4', '#C9773A', '#6B4334', '#C98A55', '#6E6A70'];
+// Default [main colour, markings colour] for each breed
+const PET_DEFAULTS = [[[0, 0]],
+  [[0, 15], [5, 4], [13, 12], [4, 12], [4, 4], [0, 15], [12, 12], [5, 4], [5, 13], [1, 1], [1, 14], [14, 15], [12, 4], [14, 4], [15, 4], [4, 14], [4, 15], [4, 1], [13, 1], [5, 4], [4, 14], [15, 0], [4, 4], [5, 12]],
+  [[14, 15], [5, 5], [12, 4], [4, 14], [13, 13], [5, 4]],
+  [[4, 4], [4, 4], [15, 4]],
+  [[7, 7], [7, 7], [7, 7]],
+  [[8, 9], [7, 7], [4, 4], [12, 12]],
+  [[1, 1], [1, 1], [14, 4]],
+  [[6, 6], [6, 6], [1, 1]]];
+// 8 colours per kind of pet: fur tones for furry ones, brights for frogs, birds and fish
+const FUR = [4, 13, 1, 0, 14, 15, 5, 12], BRIGHT = [7, 8, 9, 1, 6, 10, 12, 4];
+const petPalette = (pet) => [4, 5, 7].includes(pet) ? BRIGHT : FUR;
+const PET_DEFAULT_COLOUR = [0, 0, 6, 4, 7, 8, 1, 6];
+const petDefaults = (pet, breed) => (PET_DEFAULTS[pet] && PET_DEFAULTS[pet][breed]) || [0, 0];
+const hasMarkings = (pet) => pet === 1 || pet === 2;
+const PET_ACC = ['None', 'Collar', 'Bandana', 'Bow', 'Flower'];
+function isDark(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) < 90; }
+
+// Draws the pet in its own little corner space (head roughly centred on 34,180)
+function petSVG(type, breed, colourIdx, markIdx, uidStr, accType = 0, accIdx = 3) {
+  if (!type) return '';
+  const C = PETC[colourIdx], M = PETC[markIdx], W2 = '#F4F1EA', PINK = '#F4A3C8', clip = `pc${uidStr}`;
+  const dk = (d, o = .2) => `<path d="${d}" fill="#000" opacity="${o}"/>`;
+  const lt = (d, o = .45) => `<path d="${d}" fill="#fff" opacity="${o}"/>`;
+  const ln = (d, w = 2.4, c = INK) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const ell = (cx, cy, rx, ry) => `M${cx - rx} ${cy} a${rx} ${ry} 0 1 0 ${2 * rx} 0 a${rx} ${ry} 0 1 0 ${-2 * rx} 0`;
+  const blob = (cx, cy, rx, ry, fill, rot = 0) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''} fill="${fill}"/>`;
+  const circ = (cx, cy, r, fill) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+  // big shiny eyes; a pale ring when the fur behind them is dark
+  const eye = (x, y, r = 3.6, bgc = C) => (isDark(bgc) ? circ(x, y, r + 1.6, '#fff') : '') + circ(x, y, r, INK) + circ((x - r * .35).toFixed(1), (y - r * .38).toFixed(1), (r * .36).toFixed(1), '#fff');
+  const eyes = (y = 176, dx = 7.5, r = 3.6, bg = C) => eye(34 - dx, y, r, bg) + eye(34 + dx, y, r, bg);
+  const blush = (y = 186, dx = 13) => blob(34 - dx, y, 4.2, 2.6, PINK) + blob(34 + dx, y, 4.2, 2.6, PINK);
+  const nose = (y = 184.5, rx = 5, ry = 3.8) => `<ellipse cx="34" cy="${y}" rx="${rx}" ry="${ry}" fill="${INK}"/>` + circ(32.5, y - 1.3, 1.1, '#fff');
+  const wmouth = (y = 189) => ln(`M29.5 ${y} Q31.8 ${y + 3.2} 34 ${y} Q36.2 ${y + 3.2} 38.5 ${y}`, 1.8);
+  const tongue = (y = 190) => `<path d="M31 ${y} Q31 ${y + 8} 34 ${y + 8} Q37 ${y + 8} 37 ${y} Z" fill="#F0614B"/>` + ln(`M34 ${y + 1.5} V${y + 5}`, 1.2, 'rgba(0,0,0,.25)');
+  const head = (rx = 21, ry = 19, fill = C, cy = 180) => blob(34, cy, rx, ry, fill);
+  const muzzle = (fill = W2, rx = 10, ry = 7, cy = 188) => blob(34, cy, rx, ry, fill);
+  const floppy = (fill, rx = 8, ry = 16, cy = 174, spread = 19, rot = 20) => blob(34 - spread, cy, rx, ry, fill, rot) + blob(34 + spread, cy, rx, ry, fill, -rot);
+  const pointy = (fill, inner = true, h = 146, base = 172) => `<path d="M15 ${base} L17 ${h} L31 ${base - 10} Z M53 ${base} L51 ${h} L37 ${base - 10} Z" fill="${fill}"/>` + (inner ? `<path d="M19 ${base - 6} L20 ${h + 6} L27 ${base - 11} Z M49 ${base - 6} L48 ${h + 6} L41 ${base - 11} Z" fill="${PINK}"/>` : '');
+  const fluff = (cx, cy, R, n, r, fill, a0 = 0, a1 = 6.283) => { let o = ''; for (let i = 0; i < n; i++) { const a = a0 + (a1 - a0) * i / (n - 1 || 1); o += circ((cx + R * Math.cos(a)).toFixed(1), (cy + R * Math.sin(a)).toFixed(1), r, fill); } return o; };
+  let o = '';
+  if (type === 1) { // ---------------- dogs ----------------
+    switch (breed) {
+      case 0: o = floppy(M) + head() + muzzle() + eyes() + nose() + wmouth() + blush(); break;
+      case 1: o = pointy(C) + head() + `<path d="M21 198 Q18 182 27 179 Q34 186 41 179 Q50 182 47 198 Z" fill="${M}"/>` + circ(27, 167.5, 2.2, M) + circ(41, 167.5, 2.2, M) + eyes() + nose(185) + wmouth(190) + blush(187); break;
+      case 2: o = `<path d="M13 170 L22 160 L26 173 Z M55 170 L46 160 L42 173 Z" fill="${M}"/>` + head(22, 19) + blob(34, 188.5, 12.5, 9, M) + ln('M27 166 Q34 162 41 166 M29 170 Q34 167.5 39 170', 1.8, 'rgba(0,0,0,.3)') +
+        eye(24.5, 177, 4.6) + eye(43.5, 177, 4.6) + nose(185.5, 4.4, 3.2) + tongue(191) + blush(184, 16); break;
+      case 3: o = floppy(M) + head() + [[23, 167, 3], [45, 165, 2.6], [49, 189, 3], [19, 189, 2.6], [40, 196, 2], [30, 164, 1.8]].map(([x, y, r]) => circ(x, y, r, M)).join('') + muzzle() + eyes() + nose() + wmouth() + blush(); break;
+      case 4: o = fluff(12, 182, 6, 4, 8, C, -1.6, 1.6) + fluff(56, 182, 6, 4, 8, C, 1.6, 4.7) + dk(ell(12, 184, 8, 12), .12) + dk(ell(56, 184, 8, 12), .12) + head(18, 18) + fluff(34, 161, 8, 5, 8, C, 3.4, 6.0) +
+        `<path d="M40 151 L33 146 L33 156 Z M40 151 L47 146 L47 156 Z" fill="${PINK}"/>` + circ(40, 151, 2.4, PINK) + eyes(178, 6.5) + nose(186, 4.4, 3.4) + wmouth(190) + blush(187, 11); break;
+      case 5: o = blob(19, 183, 7, 16, M, 15) + blob(31, 178, 17, 16, C) + blob(51, 186, 16, 8.5, C) + eye(30, 172, 3.6) + `<ellipse cx="66" cy="184" rx="4.6" ry="4" fill="${INK}"/>` + ln('M48 192 Q56 195 62 190', 2) + blob(40, 187, 4, 2.5, PINK); break;
+      case 6: o = `<path d="M18 168 L20 150 L30 162 Z M50 168 L48 150 L38 162 Z" fill="${C}"/>` + head() + `<path d="M20 170 L31 168 L31 173 Z M48 170 L37 168 L37 173 Z" fill="${M}"/>` + lt('M20 170 L31 168 L31 173 Z M48 170 L37 168 L37 173 Z', .35) +
+        `<path d="M17 185 L19 201 L25 195 L29 204 L34 196 L39 204 L43 195 L49 201 L51 185 Q34 177 17 185 Z" fill="${C}"/>` + lt('M17 185 L19 201 L25 195 L29 204 L34 196 L39 204 L43 195 L49 201 L51 185 Q34 177 17 185 Z', .22) + eyes(177) + nose(184.5); break;
+      case 7: o = blob(17, 157, 9.5, 17, C, -18) + blob(51, 157, 9.5, 17, C, 18) + blob(17, 158, 5, 11, PINK, -18) + blob(51, 158, 5, 11, PINK, 18) + head(21, 18, C, 182) + blob(26, 176, 7, 6, M) + blob(34, 190, 9, 6, '#3A3132') + eyes(178, 8.5, 4) + nose(187, 4, 3) + blush(188, 15); break;
+      case 8: { // scruffy
+        let d = ''; for (let i = 0; i <= 24; i++) { const a = i / 24 * 6.283, r = i % 2 ? 19 : 25; d += `${i ? 'L' : 'M'}${(34 + r * Math.cos(a)).toFixed(1)} ${(181 + r * 0.95 * Math.sin(a)).toFixed(1)} `; }
+        o = blob(14, 178, 7, 13, C, 30) + dk(ell(14, 178, 6, 12), .15) + `<path d="M50 172 L58 152 L46 166 Z" fill="${C}"/>` + `<path d="${d}Z" fill="${C}"/>` + `<path d="M20 172 L24 166 L27 172 L30 165 L33 172 Z M35 172 L38 165 L41 172 L44 166 L48 172 Z" fill="${M}"/>` +
+          `<path d="M22 188 L24 200 L28 195 L31 203 L34 196 L37 203 L40 195 L44 200 L46 188 Q34 182 22 188 Z" fill="${M}"/>` + eyes(178, 7.5, 3.6) + nose(186) + tongue(193) + blush(185, 15); break; }
+      case 9: o = fluff(13, 186, 7, 5, 6.5, C, -1.6, 1.6) + fluff(55, 186, 7, 5, 6.5, C, 1.6, 4.7) + dk(ell(13, 186, 7, 13), .1) + dk(ell(55, 186, 7, 13), .1) + fluff(34, 180, 19, 12, 6.5, C) + head(18, 17) + muzzle(lighter(C), 8, 6, 188) + eyes(177, 7) + nose(185, 4.4, 3.4) + wmouth(189.5) + blush(185, 12); break;
+      case 10: o = floppy(M, 8.5, 15, 177, 19, 12) + fluff(15, 190, 2, 3, 4, M, 1.2, 2.2) + fluff(53, 190, 2, 3, 4, M, 1, 2) + head() + muzzle(lighter(C), 11, 8, 188) + eyes() + nose() + tongue(190) + blush(); break;
+      case 11: o = blob(13, 182, 9, 19, M, 12) + blob(55, 182, 9, 19, M, -12) + head() + `<path d="M31 160 L37 160 L39 180 Q46 186 44 194 Q34 200 24 194 Q22 186 29 180 Z" fill="${W2}"/>` + eyes(176, 8.5) + nose(185) + wmouth(190) + blush(186, 15); break;
+      case 12: o = `<path d="M15 172 L16 150 L30 162 Z M53 172 L52 150 L38 162 Z" fill="${C}"/><path d="M16 150 L24 156 L19 160 Z M52 150 L44 156 L49 160 Z" fill="#000" opacity=".25"/>` + head() + `<path d="M31.5 160 L36.5 160 L38 178 Q46 184 45 196 Q34 202 23 196 Q22 184 30 178 Z" fill="${M}"/>` + eyes(176, 8.5, 3.6) + nose(185) + wmouth(190) + blush(187, 15); break;
+      case 13: o = pointy(C, true, 140, 170) + head(21, 18, C, 181) + `<path d="M31 162 L37 162 L39 178 Q48 182 47 196 Q34 202 21 196 Q20 182 29 178 Z" fill="${M}"/>` + eyes(177, 8.5) + nose(185.5) + tongue(190.5) + blush(186, 15); break;
+      case 14: o = `<path d="M11 172 Q14 160 24 164 Q18 168 18 174 Z M57 172 Q54 160 44 164 Q50 168 50 174 Z" fill="${C}"/>` + head(24, 19) + `<path d="M31 162 L37 162 L36 176 L32 176 Z" fill="${M}"/>` + muzzle(M, 12, 7.5, 189) + eyes(176, 9.5) + nose(184.5, 5.5, 4) +
+        `<path d="M24 189 Q34 200 44 189 Z" fill="${INK}"/><path d="M30 191 Q34 197 38 191 Z" fill="#F0614B"/>` + blush(184, 17); break;
+      case 15: o = `<path d="M14 166 Q18 158 26 164 Q20 172 16 176 Z M54 166 Q50 158 42 164 Q48 172 52 176 Z" fill="${M}"/>` + `<clipPath id="${clip}"><ellipse cx="34" cy="180" rx="21" ry="19"/></clipPath>` + head() +
+        `<g clip-path="url(#${clip})"><ellipse cx="24" cy="172" rx="10" ry="9" fill="${M}"/><ellipse cx="48" cy="166" rx="9" ry="6" fill="${M}"/></g>` + muzzle() + eyes(176, 8) + nose() + wmouth() + blush(186, 15); break;
+      case 16: o = fluff(12, 184, 5, 6, 6, M, -1.6, 1.6) + fluff(56, 184, 5, 6, 6, M, 1.6, 4.7) + blob(12, 184, 7, 15, M) + blob(56, 184, 7, 15, M) + head(20, 18) + muzzle(lighter(C), 10, 7, 188) + eyes(177) + nose(185) + wmouth(190) + blush(186, 13); break;
+      case 17: o = `<path d="M12 176 Q10 200 22 204 L46 204 Q58 200 56 176 Q34 168 12 176 Z" fill="${C}"/>` + dk('M12 176 Q10 200 22 204 L18 182 Z M56 176 Q58 200 46 204 L50 182 Z', .1) + head(19, 18, C, 180) +
+        fluff(34, 160, 6, 4, 6.5, C, 3.5, 5.9) + `<path d="M34 152 L26 147 L26 157 Z M34 152 L42 147 L42 157 Z" fill="${PINK}"/>` + circ(34, 152, 2.6, PINK) + muzzle(M, 9, 6.5, 188) + eyes(178, 7) + nose(186, 4.2, 3.2) + blush(187, 12); break;
+      case 18: o = `<path d="M18 172 L4 140 L30 160 Z M50 172 L64 140 L38 160 Z" fill="${C}"/><path d="M18 166 L9 148 L26 162 Z M50 166 L59 148 L42 162 Z" fill="${PINK}"/>` + head(17, 16, C, 182) + blob(34, 189, 8, 5.5, M) + eye(27, 179, 4.6) + eye(41, 179, 4.6) + nose(187, 3.4, 2.6) + blush(188, 12); break;
+      case 19: o = `<path d="M20 168 Q16 158 26 160 L28 170 Z M48 168 Q52 158 42 160 L40 170 Z" fill="${C}"/>` + blob(34, 180, 15, 21, C) + blob(34, 193, 8, 10, M) + eyes(173, 6.5, 3.2) + nose(196, 3.6, 2.8) + blush(186, 10); break;
+      case 20: o = `<path d="M12 170 Q14 160 24 164 Q18 166 18 172 Z M56 170 Q54 160 44 164 Q50 166 50 172 Z" fill="${C}"/>` + `<clipPath id="${clip}"><ellipse cx="34" cy="181" rx="24" ry="18"/></clipPath>` + head(24, 18, C, 181) +
+        `<g clip-path="url(#${clip})"><ellipse cx="44" cy="172" rx="10" ry="9" fill="${M}"/></g>` + `<path d="M18 186 Q16 200 28 198 Q34 194 40 198 Q52 200 50 186 Q34 180 18 186 Z" fill="${C}"/>` + dk('M18 186 Q16 200 28 198 Q34 194 40 198 Q52 200 50 186 Q34 192 18 186 Z', .12) +
+        eyes(175, 9, 3.4) + nose(184, 5.5, 3.8) + `<rect x="27" y="191" width="3" height="4" rx="1" fill="#fff"/><rect x="38" y="191" width="3" height="4" rx="1" fill="#fff"/>` + blush(186, 17); break;
+      case 21: // dachshund, front-on: long ears, tan brows and muzzle
+        o = blob(13, 188, 8.5, 19, C, 8) + blob(55, 188, 8.5, 19, C, -8) + dk(ell(13, 188, 7, 17), .14) + dk(ell(55, 188, 7, 17), .14) + blob(34, 177, 17, 19, C) +
+          blob(34, 190, 10, 9.5, M) + blob(23.5, 185, 4.5, 3.5, M) + blob(44.5, 185, 4.5, 3.5, M) + circ(27, 165.5, 2.6, M) + circ(41, 165.5, 2.6, M) +
+          eye(26.5, 174.5, 4.4) + eye(41.5, 174.5, 4.4) + `<ellipse cx="34" cy="188.5" rx="6" ry="4.6" fill="#3A2622"/>` + circ(32.2, 187, 1.3, '#fff') + ln('M31 194 Q34 196.5 37 194', 1.6); break;
+      case 22: { // samoyed: big fluffy cloud, pointy ears, huge smile
+        o = pointy(C, true, 142, 170) + fluff(34, 182, 20, 16, 7, C) + blob(34, 182, 20, 18, C) + dk(ell(34, 196, 13, 5), .05) +
+          eye(28, 175, 3.1, '#fff') + eye(40, 175, 3.1, '#fff') + nose(183.5, 5.2, 4) + `<path d="M23 187 Q34 199 45 187 Q34 191 23 187 Z" fill="${INK}"/><path d="M30.5 190 Q30 205 34 205 Q38 205 37.5 190 Z" fill="#EE7FA0"/>` + ln('M34 192 V200', 1.2, 'rgba(0,0,0,.2)') + blush(186, 15); break; }
+      case 23: { // shaggy lurcher: long wiry face, fringe over the eyes, dark muzzle, tongue
+        const wisp = (cx, cy, rx, ry, n, len) => { let d = ''; for (let i = 0; i <= n * 2; i++) { const a = i / (n * 2) * 6.283, r = i % 2 ? 1 : 1 + len * (0.7 + 0.3 * Math.sin(i * 2.3)); d += `${i ? 'L' : 'M'}${(cx + rx * r * Math.cos(a)).toFixed(1)} ${(cy + ry * r * Math.sin(a)).toFixed(1)} `; } return d + 'Z'; };
+        o = `<path d="M17 168 Q8 166 10 180 Q16 176 21 176 Z M51 168 Q60 166 58 180 Q52 176 47 176 Z" fill="${M}"/>` + `<path d="${wisp(34, 181, 17, 21, 14, .2)}" fill="${C}"/>` + lt(wisp(34, 181, 12, 15, 10, .15), .18) +
+          `<path d="${wisp(34, 196, 10, 8, 9, .3)}" fill="${M}"/>` + eyes(176, 7, 3.2) +
+          `<path d="M18 176 L20 168 L23 175 L25 165 L28 174 L31 164 L34 173 L37 164 L40 174 L43 165 L45 175 L48 168 L50 176 Q50 160 34 158 Q18 160 18 176 Z" fill="${C}"/>` + lt('M23 175 L25 165 L28 174 M37 164 L40 174 L43 165', .25) +
+          `<ellipse cx="34" cy="189" rx="5" ry="3.8" fill="${INK}"/>` + circ(32.5, 187.7, 1.1, '#fff') + `<path d="M30.5 195 Q30 207 34 207 Q38 207 37.5 195 Z" fill="#EE7FA0"/>` + ln('M28 194 Q34 197 40 194', 1.6); break; }
+    }
+  } else if (type === 2) { // ---------------- cats ----------------
+    const ears = (big) => big ? `<path d="M12 174 L12 140 L32 160 Z M56 174 L56 140 L36 160 Z" fill="${C}"/><path d="M16 166 L16 150 L26 160 Z M52 166 L52 150 L42 160 Z" fill="${PINK}"/>`
+      : `<path d="M16 172 L17 146 L32 162 Z M52 172 L51 146 L36 162 Z" fill="${C}"/><path d="M20 166 L21 154 L28 162 Z M48 166 L47 154 L40 162 Z" fill="${PINK}"/>`;
+    const face = eyes(178, 7.5, 3.4) + `<path d="M31 184 L37 184 L34 187.5 Z" fill="${PINK}"/>` + ln('M34 187.5 Q31.5 191 29 189 M34 187.5 Q36.5 191 39 189', 1.6) + ln('M7 184 L20 187 M7 191 L20 190 M61 184 L48 187 M61 191 L48 190', 1.3) + blush(187, 14);
+    const head = circ(34, 182, 20, C);
+    switch (breed) {
+      case 0: o = ears() + head + ln('M28 166 V173 M34 164 V172 M40 166 V173 M15 181 H22 M46 181 H53', 2.8, M) + face; break;
+      case 1: o = ears() + head + face; break;
+      case 2: o = ears() + head + `<path d="M34 170 Q30 178 24 192 Q34 204 44 192 Q38 178 34 170 Z" fill="${M}"/>` + face; break;
+      case 3: o = ears() + `<clipPath id="${clip}"><circle cx="34" cy="182" r="20"/></clipPath>` + head + `<g clip-path="url(#${clip})"><ellipse cx="22" cy="168" rx="13" ry="10" fill="${M}"/><ellipse cx="50" cy="190" rx="11" ry="12" fill="#3A3132"/></g>` + face; break;
+      case 4: o = ears(true) + head + ln('M28 168 Q34 165 40 168 M29 172 Q34 170 39 172', 1.6, 'rgba(0,0,0,.3)') + face; break;
+      case 5: o = ears() + fluff(34, 186, 18, 9, 8, C, 0.3, 2.85) + head + lt(ell(34, 196, 11, 6), .35) + face; break;
+    }
+  } else if (type === 3) { // ---------------- bunnies ----------------
+    const head = circ(34, 184, 18, C), face = eyes(181, 6.5, 3.2) + `<path d="M31.5 186 L36.5 186 L34 189 Z" fill="${PINK}"/>` + ln('M34 189 V191.5 M34 191.5 Q31.5 194.5 29.5 192.5 M34 191.5 Q36.5 194.5 38.5 192.5', 1.5) + blush(188, 12);
+    const up = blob(26, 152, 6.5, 20, C) + blob(42, 152, 6.5, 20, C) + blob(26, 154, 3, 13, PINK) + blob(42, 154, 3, 13, PINK);
+    switch (breed) {
+      case 0: o = up + head + face; break;
+      case 1: o = head + blob(15, 186, 7, 18, C, 18) + blob(53, 186, 7, 18, C, -18) + dk(ell(15, 186, 7, 18), .12) + dk(ell(53, 186, 7, 18), .12) + face; break;
+      case 2: o = up + `<clipPath id="${clip}"><circle cx="34" cy="184" r="18"/></clipPath>` + head + `<g clip-path="url(#${clip})"><path d="M30 164 L38 164 L40 184 Q34 200 28 184 Z" fill="${W2}"/><rect x="14" y="192" width="40" height="12" fill="${W2}"/></g>` + face; break;
+    }
+  } else if (type === 4) { // ---------------- frogs ----------------
+    o = circ(22, 170, 9, C) + circ(46, 170, 9, C) + blob(34, 186, 25, 16, C) + circ(22, 170, 5.5, '#fff') + circ(46, 170, 5.5, '#fff') + eye(23, 171, 3, '#fff') + eye(47, 171, 3, '#fff') + ln('M20 188 Q34 197 48 188', 2.5) + blush(186, 18);
+    if (breed === 1) o += [[16, 182, 3], [50, 180, 2.5], [28, 197, 2.5], [44, 195, 2]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#000" opacity=".2"/>`).join('');
+    if (breed === 2) o += `<path d="M26 166 L26 154 L30 160 L34 150 L38 160 L42 154 L42 166 Z" fill="#F7C23E"/>` + circ(34, 161, 1.8, '#F0614B');
+  } else if (type === 5) { // ---------------- birds ----------------
+    const wing = C === '#7B92CF' ? '#F7C23E' : '#5B7FD1';
+    switch (breed) {
+      case 0: o = blob(34, 186, 16, 18, C) + blob(41, 188, 9, 14, wing) + circ(34, 160, 14, C) + `<path d="M44 156 Q58 158 47 170 Z" fill="#F7C23E"/>` + circ(37, 156, 5, '#fff') + eye(38, 156, 2.6, '#fff') + blob(33, 165, 3.5, 2.2, PINK); break;
+      case 1: o = blob(34, 188, 14, 16, C) + circ(34, 166, 13, C) + `<path d="M22 168 Q34 154 46 168 Q34 182 22 168 Z" fill="#F7C23E"/>` + circ(28, 176, 1.6, INK) + circ(40, 176, 1.6, INK) +
+        `<path d="M32 168 L36 168 L34 173 Z" fill="#F59A30"/>` + eye(29, 163, 2.6, '#F7C23E') + eye(39, 163, 2.6, '#F7C23E') + ln('M28 190 Q34 194 40 190 M28 196 Q34 200 40 196', 1.6, 'rgba(0,0,0,.25)'); break;
+      case 2: o = `<path d="M30 152 Q24 134 34 130 M34 150 Q32 132 42 130 M38 152 Q42 136 50 138" fill="none" stroke="#F7C23E" stroke-width="4" stroke-linecap="round"/>` + blob(34, 186, 16, 18, C) + circ(34, 162, 14, C) + dk(ell(36, 188, 8, 12), .12) +
+        `<path d="M42 160 Q52 164 44 172 Z" fill="${INK}"/>` + eye(35, 158, 2.8) + blob(37, 166, 3.5, 2.2, PINK); break;
+      case 3: o = blob(30, 186, 15, 18, C) + circ(30, 162, 13, C) + circ(34, 166, 7, W2) + `<path d="M38 154 Q66 150 64 166 Q54 172 38 168 Z" fill="#F59A30"/><path d="M58 154 Q66 154 64 166 Q60 162 58 154 Z" fill="${INK}"/>` + eye(31, 158, 2.8); break;
+    }
+  } else if (type === 6) { // ---------------- hamsters ----------------
+    switch (breed) {
+      case 0: o = circ(20, 168, 6, C) + circ(48, 168, 6, C) + circ(20, 168, 3.5, PINK) + circ(48, 168, 3.5, PINK) + circ(34, 186, 20, C) + lt(ell(34, 194, 11, 7), .5) + blush(188, 13) + eyes(181, 6.5, 3) + circ(34, 186, 2, '#F0614B') + wmouth(189); break;
+      case 1: o = circ(20, 166, 6, C) + circ(48, 166, 6, C) + circ(20, 166, 3.5, PINK) + circ(48, 166, 3.5, PINK) + circ(34, 182, 17, C) + circ(16, 192, 12, C) + circ(52, 192, 12, C) + blob(16, 192, 6, 4, PINK) + blob(52, 192, 6, 4, PINK) +
+        eyes(178, 6.5, 3) + circ(34, 184, 2, '#F0614B') + wmouth(187); break;
+      case 2: o = blob(34, 188, 27, 17, C) + `<path d="M20 180 L24 170 L28 178 L32 168 L36 178 L40 168 L44 178 L48 170 L50 182 Z" fill="${W2}"/>` + blob(16, 176, 6, 4, C) + blob(52, 176, 6, 4, C) + eyes(184, 7.5, 3.2) + blob(34, 191, 3, 2, '#F0614B') + blush(191, 14); break;
+    }
+  } else if (type === 7) { // ---------------- fish in a bowl ----------------
+    o = circ(34, 176, 23, '#A8D0D8') + `<path d="M14 166 Q34 170 54 166" fill="none" stroke="#fff" stroke-width="3" opacity=".8"/>`;
+    if (breed === 0) o += blob(36, 182, 10, 7, C) + `<path d="M26 182 L18 176 L18 188 Z" fill="${C}"/>` + eye(41, 180, 2.2);
+    if (breed === 1) o += `<clipPath id="${clip}"><ellipse cx="36" cy="182" rx="11" ry="7.5"/></clipPath>` + blob(36, 182, 11, 7.5, C) + `<path d="M25 182 L17 176 L17 188 Z" fill="${C}"/><g clip-path="url(#${clip})"><rect x="30" y="170" width="4" height="24" fill="#fff"/><rect x="40" y="170" width="3" height="24" fill="#fff"/></g>` + eye(43, 180, 2.2);
+    if (breed === 2) { let sp = ''; for (let i = 0; i < 12; i++) { const a = i * 0.5236; sp += `M${(34 + 10 * Math.cos(a)).toFixed(1)} ${(181 + 10 * Math.sin(a)).toFixed(1)} L${(34 + 14 * Math.cos(a)).toFixed(1)} ${(181 + 14 * Math.sin(a)).toFixed(1)} `; }
+      o += ln(sp, 2, C) + circ(34, 181, 11, C) + eye(30, 178, 2.4) + eye(39, 178, 2.4) + circ(34.5, 185, 2, INK) + blush(184, 8); }
+    o += `<rect x="18" y="152" width="32" height="7" rx="3.5" fill="#fff" opacity=".7"/>`;
+  }
+  if (type === 1 || type === 2) {
+    const A = FACE[accIdx] || FACE[3];
+    const chest = blob(34, 206, 15, 13, C) + (type === 1 && breed === 21 ? blob(34, 208, 3.6, 2.6, W2) : '');
+    let acc = '';
+    if (accType === 1) acc = `<rect x="20.5" y="196.5" width="27" height="5" rx="2.5" fill="${A}"/>` + circ(34, 204.5, 3, '#E8C25E') + circ(34, 204.5, 1, '#B8902E');
+    if (accType === 2) acc = `<path d="M20 196.5 L48 196.5 L34 213 Z" fill="${A}"/>` + dk('M34 196.5 L48 196.5 L34 213 Z', .12) + `<rect x="20" y="195" width="28" height="4" rx="2" fill="${A}"/>`;
+    if (accType === 3) acc = `<path d="M34 199 L23 192 L23 206 Z M34 199 L45 192 L45 206 Z" fill="${A}"/>` + circ(34, 199, 3.4, A) + dk('M30.6 199 a3.4 3.4 0 1 0 6.8 0 a3.4 3.4 0 1 0 -6.8 0', .15);
+    if (accType === 4) { let f = ''; for (let i = 0; i < 5; i++) { const a = i * 1.2566 - 1.57; f += circ((17 + 6 * Math.cos(a)).toFixed(1), (161 + 6 * Math.sin(a)).toFixed(1), 4.6, A); } acc = f + circ(17, 161, 3.4, '#F7C23E'); }
+    o = accType === 4 ? `<g transform="translate(0 -8)">${chest}${o}${acc}</g>` : `<g transform="translate(0 -8)">${chest}${acc}${o}</g>`;
+  }
+  return o;
+}
+function lighter(hex) { const n = parseInt(hex.slice(1), 16), m = (v) => Math.round(v + (255 - v) * .45); return '#' + [m(n >> 16), m(n >> 8 & 255), m(n & 255)].map(v => v.toString(16).padStart(2, '0')).join(''); }
+
 function cleanAvatar(a) {
   const o = {};
   for (const k in PARTS) o[k] = clampInt(a && a[k], 0, PARTS[k] - 1);
-  o.hairc = clampInt(a && a.hairc, 0, HAIR.length - 1); o.skin = clampInt(a && a.skin, 0, FACE.length - 1); o.bg = clampInt(a && a.bg, 0, PASTEL.length - 1);
+  o.hairc = clampInt(a && a.hairc, 0, HAIR.length - 1); o.hatc = clampInt(a && a.hatc, 0, FACE.length - 1); o.breed = clampInt(a && a.breed, 0, 30); o.petc = (a && a.petc != null) ? clampInt(a.petc, 0, PETC.length - 1) : -1; o.petm = (a && a.petm != null) ? clampInt(a.petm, 0, PETC.length - 1) : -1; o.petacc = clampInt(a && a.petacc, 0, PET_ACC.length - 1); o.petaccc = (a && a.petaccc != null) ? clampInt(a.petaccc, 0, FACE.length - 1) : 3; o.skin = clampInt(a && a.skin, 0, FACE.length - 1); o.bg = clampInt(a && a.bg, 0, PASTEL.length - 1);
   o.seed = clampInt(a && a.seed, 0, 1e9);
+  if (o.breed >= BREEDS[o.pet].length) o.breed = 0;
+  if (o.petc < 0) o.petc = PET_DEFAULT_COLOUR[o.pet];
+  if (o.petm < 0) o.petm = petDefaults(o.pet, o.breed)[1];
   return o;
 }
 function clampInt(v, lo, hi) { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo; }
@@ -343,14 +542,23 @@ function avatarSVG(raw, opts = {}) {
   const W = [56, 54, 46, 66, 50, 54][a.shape], T = [56, 56, 50, 68, 52, 54][a.shape];
   const L = 100 - W, R = 100 + W;
   const HC = HAIR[a.hairc];
+  const CAP = `<path d="M${L+4} ${T+28} Q100 ${T-14} ${R-4} ${T+28} Q100 ${T+8} ${L+4} ${T+28} Z" fill="${HC}"/>`;
   const sh = (d, w = 5) => `<path d="${d}" fill="none" stroke="${HC}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
   const s = (d, w = 5) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
   let behind = '', head = '', front = '';
 
   // hair that sits behind the head
   if (a.hair === 6) behind += `<rect x="${L-12}" y="${T-8}" width="${2*W+24}" height="128" rx="${W}" fill="${HC}"/>`;
-  if (a.hair === 9) behind += `<path d="M${L-12} ${T+34} C${L-16} ${T-18} ${R+16} ${T-18} ${R+12} ${T+34} C${R+16} ${T+80} ${R+22} ${T+112} ${R+26} 200 L${L-26} 200 C${L-22} ${T+112} ${L-16} ${T+80} ${L-12} ${T+34} Z" fill="${HC}"/>`;
+  if (a.hair === 9) behind += `<path d="M${L-12} ${T+34} C${L-16} ${T-18} ${R+16} ${T-18} ${R+12} ${T+34} C${R+16} ${T+80} ${R+22} ${T+112} ${R+30} 240 L${L-30} 240 C${L-22} ${T+112} ${L-16} ${T+80} ${L-12} ${T+34} Z" fill="${HC}"/>`;
+  if (a.hair === 10) for (let i = 0; i <= 8; i++) { const ang = Math.PI * (1.05 + i * 0.1125); behind += `<circle cx="${(100 + (W + 6) * Math.cos(ang)).toFixed(1)}" cy="${(T + 46 + (W + 2) * Math.sin(ang)).toFixed(1)}" r="${W * 0.5}" fill="${HC}"/>`; }
+  if (a.hair === 14) for (let i = 0; i < 5; i++) { const y = T + 42 + i * 22; behind += `<circle cx="${L-6}" cy="${y}" r="${11 - i}" fill="${HC}"/><circle cx="${R+6}" cy="${y}" r="${11 - i}" fill="${HC}"/>`; }
+  if (a.hair === 17) behind += `<path d="M${L-2} ${T+30} L${L-10} ${T+106} Q100 ${T+128} ${R+10} ${T+106} L${R+2} ${T+30} Z" fill="${HC}"/>`;
   if (a.hair === 3) behind += `<circle cx="${100-W*0.72}" cy="${T+2}" r="21" fill="${HC}"/><circle cx="${100+W*0.72}" cy="${T+2}" r="21" fill="${HC}"/>`;
+
+  // neck — sits behind the head, in front of any long hair
+  behind += `<rect x="85" y="140" width="30" height="100" rx="6" fill="${skin}"/><rect x="85" y="150" width="30" height="34" fill="#000" opacity=".12"/>`;
+  // shoulders and a plain tee
+  behind += `<path d="M28 240 Q30 196 84 186 L116 186 Q170 196 172 240 Z" fill="#F4F1EA"/><path d="M84 186 Q100 204 116 186 Z" fill="${skin}"/><path d="M84 186 Q100 204 116 186" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="4"/>`;
 
   // ears
   const showEars = a.hair !== 6 && a.hair !== 9;
@@ -389,6 +597,14 @@ function avatarSVG(raw, opts = {}) {
       sh(`M${L+10} ${T+16} L${L-16} ${T-2} M${L+10} ${T+16} L${L-12} ${T-12}`, 5) + sh(`M${R-10} ${T+16} L${R+16} ${T-2} M${R-10} ${T+16} L${R+12} ${T-12}`, 5) +
       `<circle cx="${L+8}" cy="${T+16}" r="5" fill="${FACE[(a.skin+2)%FACE.length]}"/><circle cx="${R-8}" cy="${T+16}" r="5" fill="${FACE[(a.skin+2)%FACE.length]}"/>`; break;
     case 9: front += `<path d="M99 ${T-9} Q${L-8} ${T-8} ${L-6} ${T+50} Q${L+8} ${T+12} 99 ${T+2} Z M101 ${T-9} Q${R+8} ${T-8} ${R+6} ${T+50} Q${R-8} ${T+12} 101 ${T+2} Z" fill="${HC}"/>`; break;
+    case 10: front += `<path d="M${L+2} ${T+30} Q100 ${T-6} ${R-2} ${T+30} Q100 ${T+16} ${L+2} ${T+30} Z" fill="${HC}"/>`; break;
+    case 11: front += `<path d="M86 ${T+12} L90 ${T-30} L97 ${T-4} L100 ${T-40} L104 ${T-4} L111 ${T-30} L114 ${T+12} Z" fill="${HC}"/>`; break;
+    case 12: { const n = 6, step = (2 * W - 16) / n; let d = `M${L+8} ${T+20}`; for (let i = 0; i < n; i++) { const x = L + 8 + i * step; d += ` L${(x + step / 2).toFixed(1)} ${T - 18 + (i % 2) * 8} L${(x + step).toFixed(1)} ${T + 14}`; } front += `<path d="${d} Q100 ${T+30} ${L+8} ${T+20} Z" fill="${HC}"/>`; break; }
+    case 13: front += CAP + `<circle cx="100" cy="${T-16}" r="17" fill="${HC}"/><rect x="88" y="${T-4}" width="24" height="7" rx="3" fill="${FACE[(a.skin+4)%FACE.length]}"/>`; break;
+    case 14: front += CAP + `<circle cx="${L-6}" cy="${T+136}" r="5" fill="${FACE[(a.skin+3)%FACE.length]}"/><circle cx="${R+6}" cy="${T+136}" r="5" fill="${FACE[(a.skin+3)%FACE.length]}"/>`; break;
+    case 15: front += `<path d="M${L+2} ${T+30} C${L} ${T-10} 96 ${T-34} ${R+12} ${T-16} C${R} ${T-6} ${R-4} ${T+8} ${R-2} ${T+30} Q100 ${T+8} ${L+2} ${T+30} Z" fill="${HC}"/>`; break;
+    case 16: { let c = CAP; for (let i = 0; i < 9; i++) { const ang = Math.PI * (1.08 + i * 0.105); c += `<circle cx="${(100 + (W - 6) * Math.cos(ang)).toFixed(1)}" cy="${(T + 40 + (W - 8) * Math.sin(ang)).toFixed(1)}" r="10" fill="${HC}"/>`; } front += c; break; }
+    case 17: front += CAP; break;
   }
 
   // fringe — sits over any hairstyle
@@ -402,6 +618,24 @@ function avatarSVG(raw, opts = {}) {
       front += `<path d="${d} Z" fill="${HC}"/>`; break; }
   }
 
+  // hats — on top of any hair
+  const HT = FACE[a.hatc], shade = (d) => `<path d="${d}" fill="#000" opacity=".16"/>`;
+  switch (a.hat) {
+    case 1: { const d = `M${L-2} ${T+22} C${L-2} ${T-28} ${R+2} ${T-28} ${R+2} ${T+22} Z`; front += `<path d="${d}" fill="${HT}"/><rect x="${L-5}" y="${T+10}" width="${2*W+10}" height="16" rx="7" fill="${HT}"/>` + shade(`M${L-5} ${T+17} h${2*W+10} v9 h-${2*W+10} Z`) + `<circle cx="100" cy="${T-24}" r="10" fill="#F4F1EA"/>`; break; }
+    case 2: { const d = `M${L} ${T+18} C${L} ${T-24} ${R} ${T-24} ${R} ${T+18} Z`, b = `M${R-12} ${T+10} Q${R+30} ${T+6} ${R+36} ${T+20} Q${R+8} ${T+24} ${R-12} ${T+20} Z`; front += `<path d="${d}" fill="${HT}"/><path d="${b}" fill="${HT}"/>` + shade(b) + `<circle cx="100" cy="${T-13}" r="4" fill="${INK}"/>`; break; }
+    case 3: { const b = `M${L-16} ${T+30} Q100 ${T+2} ${R+16} ${T+30} Q100 ${T+18} ${L-16} ${T+30} Z`; front += `<path d="M${L+10} ${T+18} L${L+16} ${T-18} Q100 ${T-28} ${R-16} ${T-18} L${R-10} ${T+18} Z" fill="${HT}"/><path d="${b}" fill="${HT}"/>` + shade(b); break; }
+    case 4: front += `<ellipse cx="96" cy="${T+2}" rx="${W+8}" ry="17" transform="rotate(-8 96 ${T+2})" fill="${HT}"/>` + s(`M98 ${T-14} L101 ${T-24}`, 4); break;
+    case 5: front += `<path d="M78 ${T+10} L104 ${T-50} L126 ${T+8} Z" fill="${HT}"/>` + `<path d="M88 ${T-12} L118 ${T-14} M96 ${T-30} L112 ${T-32}" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="104" cy="${T-52}" r="8" fill="#F7C23E"/>`; break;
+    case 6: front += `<path d="M${L+8} ${T+14} L${L+6} ${T-26} L${L+26} ${T-6} L100 ${T-36} L${R-26} ${T-6} L${R-6} ${T-26} L${R-8} ${T+14} Z" fill="#F7C23E"/><circle cx="100" cy="${T+2}" r="5" fill="#F0614B"/><circle cx="${L+24}" cy="${T+5}" r="4" fill="#7B92CF"/><circle cx="${R-24}" cy="${T+5}" r="4" fill="#3DBA6F"/>`; break;
+    case 7: front += `<path d="M${L-6} ${T+60} C${L-8} ${T-36} ${R+8} ${T-36} ${R+6} ${T+60}" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><rect x="${L-18}" y="${T+42}" width="22" height="36" rx="10" fill="${HT}"/><rect x="${R-4}" y="${T+42}" width="22" height="36" rx="10" fill="${HT}"/>`; break;
+    case 8: { const cx = R - 12, cy = T + 10; let f = ''; for (let i = 0; i < 5; i++) { const ang = i * 1.2566 - 1.57; f += `<circle cx="${(cx + 11 * Math.cos(ang)).toFixed(1)}" cy="${(cy + 11 * Math.sin(ang)).toFixed(1)}" r="9" fill="${HT}"/>`; } front += f + `<circle cx="${cx}" cy="${cy}" r="7" fill="#F7C23E"/>`; break; }
+    case 9: front += `<rect x="70" y="${T-54}" width="60" height="64" rx="6" fill="${INK}"/><rect x="70" y="${T-6}" width="60" height="11" fill="${HT}"/><rect x="50" y="${T+5}" width="100" height="11" rx="5" fill="${INK}"/>`; break;
+    case 10: { const b = `M${L-28} ${T} Q${L-22} ${T+26} 100 ${T+24} Q${R+22} ${T+26} ${R+28} ${T} Q${R} ${T+16} 100 ${T+14} Q${L} ${T+16} ${L-28} ${T} Z`; front += `<path d="M70 ${T+10} C68 ${T-30} 86 ${T-36} 100 ${T-22} C114 ${T-36} 132 ${T-30} 130 ${T+10} Z" fill="#8A5A3B"/><rect x="70" y="${T}" width="60" height="9" fill="${HT}"/><path d="${b}" fill="#8A5A3B"/>` + shade(b); break; }
+    case 11: { const cx = R - 16, cy = T + 4; front += `<path d="M${cx} ${cy} L${cx-24} ${cy-16} L${cx-24} ${cy+16} Z M${cx} ${cy} L${cx+24} ${cy-16} L${cx+24} ${cy+16} Z" fill="${HT}"/><circle cx="${cx}" cy="${cy}" r="7" fill="${HT}"/>` + shade(`M${cx-7} ${cy} a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0`); break; }
+    case 12: front += `<path d="M${L+4} ${T+8} Q${L-26} ${T-2} ${L-20} ${T-38} Q${L-8} ${T-12} ${L+14} ${T-4} Z M${R-4} ${T+8} Q${R+26} ${T-2} ${R+20} ${T-38} Q${R+8} ${T-12} ${R-14} ${T-4} Z" fill="#F4F1EA"/><path d="M${L} ${T+20} C${L} ${T-24} ${R} ${T-24} ${R} ${T+20} Z" fill="#B9B6BF"/><rect x="${L-4}" y="${T+12}" width="${2*W+8}" height="12" rx="5" fill="${HT}"/>`; break;
+    case 13: front += `<g clip-path="url(#${id}c)"><rect x="0" y="${T+26}" width="200" height="16" fill="${HT}"/><rect x="0" y="${T+32}" width="200" height="4" fill="#fff" opacity=".7"/></g>`; break;
+  }
+
   // eyes
   const ey = 108, ex = [80, 120];
   ex.forEach((x, i) => {
@@ -411,7 +645,10 @@ function avatarSVG(raw, opts = {}) {
       case 2: front += `<ellipse cx="${x}" cy="${ey}" rx="13" ry="8" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="${x+6}" cy="${ey}" r="4.5" fill="${INK}"/>` + s(`M${x-10} ${ey-16} L${x+10} ${ey-18}`, 4); break;
       case 3: front += s(`M${x-10} ${ey+2} Q${x} ${ey-8} ${x+10} ${ey+2}`, 4) + s(`M${x-7} ${ey-6} l-3 -6 M${x} ${ey-8} l0 -7 M${x+7} ${ey-6} l3 -6`, 3); break;
       case 4: front += s(`M${x-11} ${ey} Q${x} ${ey+6} ${x+11} ${ey}`, 4) + `<circle cx="${x}" cy="${ey+5}" r="4" fill="${INK}"/>`; break;
-      case 5: front += `<circle cx="${x}" cy="${ey}" r="10" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="${x-2}" cy="${ey+2}" r="4.5" fill="${INK}"/>` + s(i ? `M${x-8} ${ey-17} L${x+9} ${ey-13}` : `M${x-9} ${ey-13} L${x+8} ${ey-17}`, 4); break;
+      case 6: front += i ? s(`M${x-10} ${ey} Q${x} ${ey-8} ${x+10} ${ey}`, 4) : `<circle cx="${x}" cy="${ey}" r="5.5" fill="${INK}"/>`; break;
+      case 7: front += `<path d="M${x} ${ey+8} C${x-15} ${ey-2} ${x-8} ${ey-13} ${x} ${ey-4} C${x+8} ${ey-13} ${x+15} ${ey-2} ${x} ${ey+8} Z" fill="${INK}"/>`; break;
+      case 8: front += s(i ? `M${x+8} ${ey-7} L${x-6} ${ey} L${x+8} ${ey+7}` : `M${x-8} ${ey-7} L${x+6} ${ey} L${x-8} ${ey+7}`, 4); break;
+      case 5: front += `<circle cx="${x}" cy="${ey}" r="10\" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="${x-2}" cy="${ey+2}" r="4.5" fill="${INK}"/>` + s(i ? `M${x-8} ${ey-17} L${x+9} ${ey-13}` : `M${x-9} ${ey-13} L${x+8} ${ey-17}`, 4); break;
     }
   });
 
@@ -434,6 +671,8 @@ function avatarSVG(raw, opts = {}) {
     case 5: front += s('M86 156 Q100 144 114 156', 4.5); break;
     case 6: front += s('M86 150 Q106 156 117 141', 4.5); break;
     case 7: front += `<clipPath id="${id}m"><path d="M76 142 Q100 178 124 142 Z"/></clipPath><path d="M76 142 Q100 178 124 142 Z" fill="${INK}"/><g clip-path="url(#${id}m)"><rect x="74" y="140" width="52" height="7" fill="#fff"/><ellipse cx="100" cy="164" rx="13" ry="8" fill="#F0614B"/></g>` + s('M76 142 Q100 178 124 142 Z', 4.5) + s('M72 139 Q76 140 77 144 M128 139 Q124 140 123 144', 3.5); break;
+    case 8: front += `<path d="M93 151 Q93 168 101 168 Q109 168 109 151 Z" fill="#F0614B"/>` + s('M84 148 Q100 158 116 148', 4.5) + s('M101 154 V162', 2.5); break;
+    case 9: front += s('M84 147 Q92 156 100 148 Q108 156 116 147', 4.5); break;
   }
 
   // extras
@@ -446,6 +685,17 @@ function avatarSVG(raw, opts = {}) {
     case 6: front += `<ellipse cx="70" cy="128" rx="9" ry="6" fill="#fff" opacity=".35"/><ellipse cx="130" cy="128" rx="9" ry="6" fill="#fff" opacity=".35"/>`; break;
   }
 
+  switch (a.extra) {
+    case 7: front += `<rect x="62" y="98" width="34" height="22" rx="9" fill="${INK}"/><rect x="104" y="98" width="34" height="22" rx="9" fill="${INK}"/>` + s('M96 104 Q100 100 104 104', 4) + `<rect x="68" y="102" width="10" height="4" rx="2" fill="#fff" opacity=".5"/><rect x="110" y="102" width="10" height="4" rx="2" fill="#fff" opacity=".5"/>`; break;
+    case 8: front += `<path d="M${L+10} 126 Q${L+12} 182 100 184 Q${R-12} 182 ${R-10} 126 Q${R-16} 166 100 170 Q${L+16} 166 ${L+10} 126 Z" fill="${HC}"/>`; break;
+    case 9: front += `<circle cx="103" cy="139" r="5" fill="none" stroke="#F7C23E" stroke-width="3"/>`; break;
+    case 10: front += `<g transform="rotate(-25 130 132)"><rect x="114" y="126" width="32" height="13" rx="6" fill="#F2D29F"/><rect x="125" y="126" width="10" height="13" fill="#E5BE85"/><circle cx="128" cy="130" r="1" fill="${INK}"/><circle cx="132" cy="135" r="1" fill="${INK}"/></g>`; break;
+  }
+
+  // pets — peeking into the bottom-left corner
+  const petSvg = petSVG(a.pet, a.breed, a.petc, a.petm, id, hasMarkings(a.pet) ? a.petacc : 0, a.petaccc);
+  const petLayer = petSvg ? `<g transform="translate(0 200) scale(1.5) translate(0 -200)">${petSvg}</g>` : '';
+
   const bg = opts.noBg ? '' : `<rect width="200" height="200" fill="${PASTEL[a.bg]}"/>`;
   const clip = shapes[a.shape].replace(/fill="[^"]*"/, '');
   return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -453,7 +703,7 @@ function avatarSVG(raw, opts = {}) {
       <clipPath id="${id}c">${clip}</clipPath>
       <filter id="${id}f" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="${a.seed % 97}"/><feDisplacementMap in="SourceGraphic" scale="3.2"/></filter>
     </defs>
-    ${bg}<g filter="url(#${id}f)">${behind}${head}${front}</g></svg>`;
+    ${bg}<g filter="url(#${id}f)"><g transform="translate(18 -4) scale(.9)">${behind}${head}${front}</g>${petLayer}</g></svg>`;
 }
 
 /* ============================================================
@@ -523,7 +773,7 @@ function memberPoints(m) { return clampInt(m.points ?? state.start, 0, 99); }
 function render() {
   document.querySelectorAll('.write-only').forEach(el => el.hidden = !state.canWrite);
   $('#start-val').textContent = state.start; $('#start-copy').textContent = state.start;
-  renderWall(); renderForfeits(); renderLog();
+  renderWall(); renderForfeits(); renderLog(); renderMe();
 }
 
 function renderWall() {
@@ -541,7 +791,7 @@ function renderWall() {
     }
     const colour = PASTEL[cleanAvatar(m.avatar).bg];
     let verdict = '';
-    if (bust && m.forfeit) verdict = `<div class="verdict"><b>Forfeit owed</b>${esc(m.forfeit)}${state.canWrite ? `<button class="btn small primary" data-done="${esc(m.id)}" type="button">Done it ✓</button>` : ''}</div>`;
+    if (bust && m.forfeit) verdict = `<div class="verdict"><b>Forfeit owed</b>${esc(m.forfeit)}${state.canWrite ? `<button class="btn small primary" data-done="${esc(m.id)}" type="button">Done it</button>` : ''}</div>`;
     else if (bust) verdict = `<div class="verdict"><b>Out of points!</b>Time to face the wheel.${state.canWrite ? `<button class="btn small primary" data-spin="${esc(m.id)}" type="button">Spin the wheel</button>` : ''}</div>`;
     html += `<article class="piece${bust ? ' bust' : ''}" style="--r:${tilt(m.id)}deg;--tape-colour:${colour};--tr:${(-tilt(m.id) / 2).toFixed(1)}deg" data-edit="${esc(m.id)}" tabindex="0" aria-label="${esc(m.name)}, ${pts} points">
       <span class="tape"></span>
@@ -586,8 +836,8 @@ function renderForfeits() {
 
 function renderLog() {
   const items = state.log.slice(0, 25);
-  $('#log').innerHTML = items.length ? items.map(e => `<li><span class="ic">${esc(e.icon || '•')}</span><span>${esc(e.text)}<span class="when">${ago(e.at)}</span></span></li>`).join('')
-    : '<li style="display:block;color:var(--muted)">Nothing yet. Log your first session after the next ceremony.</li>';
+  $('#log').innerHTML = items.length ? items.map(e => `<li><span class="ic">${iconSVG(e.icon || 'dot')}</span><span>${esc(e.text)}<span class="when">${ago(e.at)}</span></span></li>`).join('')
+    : '<li style="display:block;color:var(--muted)">Nothing yet. When someone loses (or wins back) a point, it shows up here.</li>';
 }
 function ago(t) {
   const s = (Date.now() - Number(t)) / 1000;
@@ -679,16 +929,101 @@ function floaty(rect, text, colour) {
   f.style.left = (rect.left + rect.width / 2) + 'px'; f.style.top = rect.top + 'px';
   document.body.appendChild(f); setTimeout(() => f.remove(), 1200);
 }
-async function bump(btn) {
-  const id = btn.dataset.face, dir = Number(btn.dataset.dir);
-  const m = state.members.find(x => x.id === id);
+/* ---- Little icons drawn in the same style as the avatars ---- */
+const EMOJI_TO_ICON = { '\u{1F622}': 'sad', '\u{1F4C9}': 'sad', '\u{1F4CC}': 'sad', '\u{1F60A}': 'happy', '\u{2728}': 'happy', '\u{1F31F}': 'happy', '\u{1F480}': 'skull', '\u{1F3A1}': 'wheel', '\u{1F44B}': 'new', '\u{2705}': 'done', '\u{1F331}': 'season' };
+function iconSVG(key) {
+  key = EMOJI_TO_ICON[key] || key;
+  const id = 'ic' + (++uid);
+  const ln = (d, w = 2.2, c = INK) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const head = (fill) => `<circle cx="6.2" cy="21.5" r="3.4" fill="${fill}"/><circle cx="33.8" cy="21.5" r="3.4" fill="${fill}"/><circle cx="20" cy="21" r="14" fill="${fill}"/>`;
+  let body;
+  switch (key) {
+    case 'devil': body = `<path d="M9.5 13 L7 3.5 L15 9.5 Z M30.5 13 L33 3.5 L25 9.5 Z" fill="${INK}"/>` + head('#F0614B') +
+      ln('M11.5 15.2 L17 17.6 M28.5 15.2 L23 17.6', 2) + `<circle cx="15.2" cy="20" r="1.9" fill="${INK}"/><circle cx="24.8" cy="20" r="1.9" fill="${INK}"/>` +
+      ln('M12.5 26 Q21 32 28.5 24.5', 2.3) + ln('M27.5 23.2 L29.6 25.6', 1.8); break;
+    case 'sad': return faceSVG(false, 0, 2);
+    case 'happy': return faceSVG(true, 1, 0);
+    case 'skull': body = `<rect x="7" y="7" width="26" height="22" rx="11" fill="#E9E6EF"/><rect x="12" y="24" width="16" height="10" rx="4" fill="#E9E6EF"/>` +
+      `<circle cx="14.5" cy="18" r="4" fill="${INK}"/><circle cx="25.5" cy="18" r="4" fill="${INK}"/><path d="M20 21.5 L18 25 L22 25 Z" fill="${INK}"/>` + ln('M16 29 V33 M20 29 V33 M24 29 V33', 1.6); break;
+    case 'wheel': body = `<circle cx="20" cy="20" r="15" fill="${PASTEL[0]}"/><path d="M20 20 L20 5 A15 15 0 0 1 35 20 Z" fill="${PASTEL[3]}"/><path d="M20 20 L20 35 A15 15 0 0 1 5 20 Z" fill="${PASTEL[1]}"/>` +
+      `<circle cx="20" cy="20" r="3.5" fill="${INK}"/><path d="M20 1.5 L16.5 7.5 L23.5 7.5 Z" fill="${INK}"/>`; break;
+    case 'new': body = `<path d="M13 10 L21 -1 L26 9.5 Z" fill="${INK}"/><circle cx="21" cy="-1" r="2.6" fill="#F7C23E"/>` + head('#F4A3C8') +
+      `<circle cx="15" cy="19" r="1.9" fill="${INK}"/><circle cx="25" cy="19" r="1.9" fill="${INK}"/>` + ln('M13.5 25.5 Q20 31.5 26.5 25.5', 2.3); break;
+    case 'done': body = head('#3DBA6F') + ln('M12 19.5 Q15 16.5 18 19.5 M22 19.5 Q25 16.5 28 19.5', 2) +
+      `<path d="M12.5 24 Q20 34 27.5 24 Z" fill="${INK}"/><rect x="13" y="23.4" width="14" height="2.4" fill="#fff"/>`; break;
+    case 'season': body = ln('M20 36 V18', 2.6) + `<path d="M20 22 C10 22 6 14 7 8 C14 8 20 12 20 22 Z" fill="#3DBA6F"/><path d="M20 19 C28 19 33 13 33 6 C25 6 20 10 20 19 Z" fill="#A7C6BE"/>`; break;
+    case 'paw': body = `<ellipse cx="20" cy="26" rx="10" ry="8.5" fill="#C98A55"/><ellipse cx="9" cy="15" rx="4" ry="5" fill="#C98A55"/><ellipse cx="16" cy="9.5" rx="4" ry="5" fill="#C98A55"/><ellipse cx="24" cy="9.5" rx="4" ry="5" fill="#C98A55"/><ellipse cx="31" cy="15" rx="4" ry="5" fill="#C98A55"/>`; break;
+    case 'dice': body = `<rect x="6" y="6" width="28" height="28" rx="8" fill="#fff" stroke="${INK}" stroke-width="2.4"/>` +
+      [[13.5,13.5],[26.5,13.5],[20,20],[13.5,26.5],[26.5,26.5]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="2.3" fill="${INK}"/>`).join(''); break;
+    default: body = `<circle cx="20" cy="20" r="5" fill="${INK}"/>`;
+  }
+  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="overflow:visible"><defs><filter id="${id}" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.16" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g filter="url(#${id})">${body}</g></svg>`;
+}
+
+/* ---- Who's clicking? Remembered in this browser ---- */
+let meId = null;
+try { meId = localStorage.getItem('showup-me'); } catch (e) {}
+const me = () => state.members.find(x => x.id === meId);
+function setMe(id) { meId = id; try { localStorage.setItem('showup-me', id); } catch (e) {} renderMe(); }
+function renderMe() {
+  const m = me(), btn = $('#me-btn');
+  btn.innerHTML = m
+    ? `<span class="mini">${avatarSVG(m.avatar)}</span><span>${esc(m.name)}</span><small>change</small>`
+    : `<span class="mini empty">?</span><span>Who are you?</span>`;
+}
+function askWhoAmI(then) {
+  if (!state.members.length) { toast('Add yourself to the board first.'); return; }
+  const m = openModal(`
+    <h3>Who are you?</h3>
+    <p class="hint">So everyone knows who took (or gave back) each point. We’ll remember you on this computer.</p>
+    <div class="who-grid">${state.members.map(x => `<button type="button" data-me="${esc(x.id)}"><span class="face">${avatarSVG(x.avatar)}</span>${esc(x.name)}</button>`).join('')}</div>
+    <div class="actions"><button class="btn ghost" type="button" id="cancel">Cancel</button></div>`, 'wide');
+  m.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'cancel') closeModal();
+    if (b.dataset.me) { setMe(b.dataset.me); closeModal(); if (then) then(); }
+  });
+}
+const withMe = (then) => me() ? then() : askWhoAmI(then);
+
+/* ---- Why is this point going? ---- */
+const REASONS = ['Missed design stand-up', 'Missed Design Club', "Didn't show up to WAYWO", 'Generally being annoying (you know what you did)', 'Said they would. Did not.', 'Camera off, vibes off'];
+function askReason(member) {
+  let reason = '';
+  const m = openModal(`
+    <div class="reason-head"><span class="face">${avatarSVG(member.avatar)}</span><div><h3 style="margin:0">Why is ${esc(member.name)} losing a point?</h3></div></div>
+    <p class="hint">Pick one or write your own. It goes in the Recently feed for all to see.</p>
+    <div class="reasons">${REASONS.map(r => `<button type="button" data-r="${esc(r)}" aria-pressed="false">${esc(r)}</button>`).join('')}</div>
+    <input type="text" id="why" maxlength="80" placeholder="Or type a reason…" style="width:100%">
+    <div class="actions"><button class="btn ghost" type="button" id="cancel">Cancel</button><button class="btn primary" type="button" id="take" disabled><span class="btn-ic">${iconSVG('devil')}</span>Take the point</button></div>`);
+  const take = m.querySelector('#take'), why = m.querySelector('#why');
+  const sync = () => { take.disabled = !reason.trim(); };
+  m.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => {
+    reason = b.dataset.r; why.value = '';
+    m.querySelectorAll('[data-r]').forEach(x => x.setAttribute('aria-pressed', x === b)); sync();
+  }));
+  why.addEventListener('input', () => { reason = why.value; m.querySelectorAll('[data-r]').forEach(x => x.setAttribute('aria-pressed', 'false')); sync(); });
+  why.addEventListener('keydown', e => { if (e.key === 'Enter' && !take.disabled) take.click(); });
+  m.querySelector('#cancel').addEventListener('click', closeModal);
+  take.addEventListener('click', () => { closeModal(); bump(member.id, -1, reason.trim()); });
+  setTimeout(() => why.blur(), 40);
+}
+
+function faceButton(id, dir) {
+  const list = document.querySelectorAll(`.face-btn.${dir < 0 ? 'happy' : 'sad'}[data-face="${CSS.escape(id)}"]`);
+  return dir < 0 ? list[list.length - 1] : list[0];
+}
+
+async function bump(id, dir, reason = '') {
+  const m = state.members.find(x => x.id === id), who = me();
   if (!m || !state.canWrite || pending.has(id)) return;
   const before = memberPoints(m), after = clampInt(before + dir, 0, 20);
   if (after === before) return;
   pending.add(id);
-  const rect = btn.getBoundingClientRect();
+  const btn = faceButton(id, dir);
+  const rect = btn ? btn.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0 };
   if (dir < 0) {
-    btn.classList.add('ouch');
+    if (btn) btn.classList.add('ouch');
     bubble(rect, after === 0 ? pick(LAST) : pick(OUCH));
     floaty(rect, '−1', '#e68b7f');
     after === 0 ? wahwah() : boop();
@@ -702,12 +1037,17 @@ async function bump(btn) {
   const ok = await safe(() => store.updateMember(id, patch));
   pending.delete(id);
   if (!ok) return;
-  if (dir < 0 && after === 0) {
-    const card = document.querySelector(`.piece[data-edit="${CSS.escape(id)}"]`);
-    if (card) card.classList.add('shake');
-    await safe(() => store.addLog('💀', `${m.name} lost their last point — wheel time`));
+  const by = who ? who.name : 'Someone', self = who && who.id === id;
+  if (dir < 0) {
+    const target = self ? 'themselves' : m.name;
+    await safe(() => store.addLog(after === 0 ? 'skull' : 'sad', `${by} took a point off ${target}: ${reason} (${after} left)`));
+    if (after === 0) {
+      const card = document.querySelector(`.piece[data-edit="${CSS.escape(id)}"]`);
+      if (card) card.classList.add('shake');
+      await safe(() => store.addLog('wheel', `${m.name} is out of points — wheel time`));
+    }
   } else {
-    await safe(() => store.addLog(dir < 0 ? '😢' : '😊', dir < 0 ? `${m.name} lost a point (${after} left)` : `${m.name} got a point back`));
+    await safe(() => store.addLog('happy', self ? `${by} gave themselves a point back (${after} left)` : `${by} gave ${m.name} a point back (${after} left)`));
   }
 }
 
@@ -722,25 +1062,58 @@ function openDesigner(member) {
     <div class="maker">
       <div class="maker-preview">
         <div class="frame"><div class="photo" id="pv"></div></div>
-        <button class="btn" type="button" id="shuffle">🎲&nbsp; Shuffle</button>
+        <button class="btn" type="button" id="shuffle"><span class="btn-ic">${iconSVG('dice')}</span>Shuffle</button>
       </div>
       <div>
         <label class="field">Name<input type="text" id="nm" maxlength="40" value="${esc(member ? member.name : '')}" placeholder="e.g. Ben"></label>
-        <div class="parts" id="parts">${Object.keys(PARTS).map(k => `<div class="part">${PART_LABELS[k]}<span class="arrows"><button type="button" data-part="${k}" data-d="-1" aria-label="Previous ${PART_LABELS[k]}">‹</button><button type="button" data-part="${k}" data-d="1" aria-label="Next ${PART_LABELS[k]}">›</button></span></div>`).join('')}</div>
-        <div class="field" style="margin-top:16px">Hair colour<div class="swatches" id="hairc"></div></div>
+        <section class="mk-section">
+        <h4 class="mk-title">You</h4>
+        <div class="parts" id="parts"></div>
+        <div class="colour-cols">
+        <div class="field">Hair colour<div class="swatches" id="hairc"></div></div>
+        <div class="field">Hat colour<div class="swatches" id="hatc"></div></div>
         <div class="field">Face colour<div class="swatches" id="skin"></div></div>
         <div class="field">Background<div class="swatches" id="bgs"></div></div>
-        ${editing ? `<div class="field">Points<span><span class="stepper"><button type="button" data-pts="-1" aria-label="Take a point">−</button><span id="ptsv">${pts}</span><button type="button" data-pts="1" aria-label="Give a point back">+</button></span></span></div>` : ''}
+        </div>
+        </section>
+        <section class="mk-section pet-section">
+        <h4 class="mk-title"><span class="btn-ic">${iconSVG('paw')}</span>Your pet</h4>
+        <div class="parts" id="pet-parts"></div>
+        <p class="hint" id="pet-empty" style="margin:10px 0 0">No pet yet. Use the arrows above to pick one.</p>
+        <div class="colour-cols" id="pet-colours">
+        <div class="field" id="petc-wrap">Pet colour<div class="swatches" id="petc"></div></div>
+        <div class="field" id="petm-wrap">Markings<div class="swatches" id="petm"></div></div>
+        <div class="field" id="petacc-wrap">Collar / bandana colour<div class="swatches" id="petaccc"></div></div>
+        </div>
+        </section>
+        ${editing ? `<div class="field" style="margin-top:24px">Points<span><span class="stepper"><button type="button" data-pts="-1" aria-label="Take a point">−</button><span id="ptsv">${pts}</span><button type="button" data-pts="1" aria-label="Give a point back">+</button></span></span></div>` : ''}
       </div>
     </div>
     <div class="actions">
       ${editing ? '<button class="btn ghost danger left" type="button" id="del">Remove</button>' : ''}
       <button class="btn ghost" type="button" id="cancel">Cancel</button>
       <button class="btn primary" type="button" id="save">${editing ? 'Save' : 'Add to board'}</button>
-    </div>`, 'wide');
+    </div>`, 'xwide');
   const paint = () => {
     m.querySelector('#pv').innerHTML = avatarSVG(av);
     m.querySelector('#hairc').innerHTML = HAIR.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-hairc="${i}" aria-pressed="${i === av.hairc}" aria-label="Hair colour ${i + 1}"></button>`).join('');
+    const row = (k, label) => `<div class="part"><span>${label}</span><span class="arrows"><button type="button" data-part="${k}" data-d="-1" aria-label="Previous ${k}">‹</button><button type="button" data-part="${k}" data-d="1" aria-label="Next ${k}">›</button></span></div>`;
+    let rows = '', petRows = '';
+    for (const k of Object.keys(PARTS)) {
+      if (k === 'pet') { let rows = ''; rows += row('pet', `Pet: <b>${PET_NAMES[av.pet]}</b>`); if (av.pet) rows += row('breed', `${av.pet === 1 ? 'Breed' : 'Type'}: <b>${BREEDS[av.pet][av.breed]}</b> <small style="color:var(--muted);font-weight:400">${av.breed + 1}/${BREEDS[av.pet].length}</small>`); if (hasMarkings(av.pet)) rows += row('petacc', `Extra: <b>${PET_ACC[av.petacc]}</b>`); petRows = rows; }
+      else rows += row(k, PART_LABELS[k]);
+    }
+    m.querySelector('#parts').innerHTML = rows;
+    m.querySelector('#pet-parts').innerHTML = petRows;
+    m.querySelector('#pet-empty').hidden = !!av.pet;
+    m.querySelector('#pet-colours').hidden = !av.pet;
+    m.querySelector('#petc-wrap').hidden = !av.pet;
+    m.querySelector('#petm-wrap').hidden = !hasMarkings(av.pet);
+    m.querySelector('#petacc-wrap').hidden = !(hasMarkings(av.pet) && av.petacc);
+    m.querySelector('#petaccc').innerHTML = FACE.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-petaccc="${i}" aria-pressed="${i === av.petaccc}" aria-label="Accessory colour ${i + 1}"></button>`).join('');
+    m.querySelector('#petm').innerHTML = petPalette(av.pet).map(i => `<button type="button" class="swatch" style="background:${PETC[i]}" data-petm="${i}" aria-pressed="${i === av.petm}" aria-label="Markings colour"></button>`).join('');
+    m.querySelector('#petc').innerHTML = petPalette(av.pet).map(i => `<button type="button" class="swatch" style="background:${PETC[i]}" data-petc="${i}" aria-pressed="${i === av.petc}" aria-label="Pet colour"></button>`).join('');
+    m.querySelector('#hatc').innerHTML = FACE.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-hatc="${i}" aria-pressed="${i === av.hatc}" aria-label="Hat colour ${i + 1}"></button>`).join('');
     m.querySelector('#skin').innerHTML = FACE.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-skin="${i}" aria-pressed="${i === av.skin}" aria-label="Face colour ${i + 1}"></button>`).join('');
     m.querySelector('#bgs').innerHTML = PASTEL.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-bg="${i}" aria-pressed="${i === av.bg}" aria-label="Background ${i + 1}"></button>`).join('');
     const pv = m.querySelector('#ptsv'); if (pv) pv.textContent = pts;
@@ -750,7 +1123,13 @@ function openDesigner(member) {
   m.addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.id === 'shuffle') { av = randomAvatar(); paint(); }
-    else if (b.dataset.part) { const k = b.dataset.part; av[k] = (av[k] + Number(b.dataset.d) + PARTS[k]) % PARTS[k]; paint(); }
+    else if (b.dataset.part === 'petacc') { const n = PET_ACC.length; av.petacc = (av.petacc + Number(b.dataset.d) + n) % n; paint(); }
+    else if (b.dataset.petaccc) { av.petaccc = Number(b.dataset.petaccc); paint(); }
+    else if (b.dataset.part === 'breed') { const n = BREEDS[av.pet].length; av.breed = (av.breed + Number(b.dataset.d) + n) % n; [av.petc, av.petm] = petDefaults(av.pet, av.breed); paint(); }
+    else if (b.dataset.part) { const k = b.dataset.part; av[k] = (av[k] + Number(b.dataset.d) + PARTS[k]) % PARTS[k]; if (k === 'pet') { av.breed = 0; [av.petc, av.petm] = petDefaults(av.pet, 0); } paint(); }
+    else if (b.dataset.petm) { av.petm = Number(b.dataset.petm); paint(); }
+    else if (b.dataset.petc) { av.petc = Number(b.dataset.petc); paint(); }
+    else if (b.dataset.hatc) { av.hatc = Number(b.dataset.hatc); paint(); }
     else if (b.dataset.hairc) { av.hairc = Number(b.dataset.hairc); paint(); }
     else if (b.dataset.skin) { av.skin = Number(b.dataset.skin); paint(); }
     else if (b.dataset.bg) { av.bg = Number(b.dataset.bg); paint(); }
@@ -768,10 +1147,10 @@ function openDesigner(member) {
         const patch = { name, avatar: av };
         if (pts !== memberPoints(member)) { patch.points = pts; if (pts > 0) patch.forfeit = null; }
         const ok = await safe(() => store.updateMember(member.id, patch));
-        if (ok && patch.points !== undefined) await safe(() => store.addLog(pts > memberPoints(member) ? '✨' : '📌', `${name} now has ${pts} point${pts === 1 ? '' : 's'}`));
+        if (ok && patch.points !== undefined) await safe(() => store.addLog(pts > memberPoints(member) ? 'happy' : 'sad', `${name} now has ${pts} point${pts === 1 ? '' : 's'}`));
       } else {
         const ok = await safe(() => store.addMember({ id: newId(), name, avatar: av, points: state.start, forfeit: null, createdAt: Date.now() }));
-        if (ok) await safe(() => store.addLog('👋', `${name} joined the board`));
+        if (ok) await safe(() => store.addLog('new', `${name} joined the board`));
       }
       closeModal();
     }
@@ -816,8 +1195,8 @@ function openLog() {
         if (before > 0 && after === 0) busted.push(mm.name);
       }
       const here = state.members.length - missed.length - Object.values(marks).filter(v => v === 'excused').length;
-      await safe(() => store.addLog(missed.length ? '📉' : '🌟', missed.length ? `${cer}: ${missed.map(x => x.name).join(', ')} missed it (−1 point)` : `${cer}: full house! ${here} showed up`));
-      for (const n of busted) await safe(() => store.addLog('💀', `${n} is out of points — wheel time`));
+      await safe(() => store.addLog(missed.length ? 'sad' : 'happy', missed.length ? `${cer}: ${missed.map(x => x.name).join(', ')} missed it (−1 point)` : `${cer}: full house! ${here} showed up`));
+      for (const n of busted) await safe(() => store.addLog('skull', `${n} is out of points — wheel time`));
       closeModal();
       if (!missed.length) confetti();
       else toast(busted.length ? `${busted.join(' & ')} ${busted.length > 1 ? 'are' : 'is'} out of points!` : 'Session logged.');
@@ -858,7 +1237,7 @@ function openSpin(member) {
       m.querySelector('#res').innerHTML = `<div class="label">${esc(member.name)} has to…</div><div class="what">${esc(f.text)}</div><div class="actions" style="justify-content:center"><button class="btn primary" type="button" id="ok">Fair enough</button></div>`;
       confetti();
       await safe(() => store.updateMember(member.id, { forfeit: f.text }));
-      await safe(() => store.addLog('🎡', `${member.name} spun: “${f.text}”`));
+      await safe(() => store.addLog('wheel', `${member.name} spun: “${f.text}”`));
       delete $('.scrim').dataset.locked;
       m.querySelector('#ok').addEventListener('click', closeModal);
     };
@@ -869,7 +1248,7 @@ function openSpin(member) {
 
 async function forfeitDone(member) {
   const ok = await safe(() => store.updateMember(member.id, { forfeit: null, points: state.start }));
-  if (ok) { await safe(() => store.addLog('✅', `${member.name} did the forfeit and is back on ${state.start} points`)); confetti(); }
+  if (ok) { await safe(() => store.addLog('done', `${member.name} did the forfeit and is back on ${state.start} points`)); confetti(); }
 }
 
 function openHow() {
@@ -877,9 +1256,9 @@ function openHow() {
     <h3>How it works</h3>
     <p class="hint" style="font-size:16px;line-height:1.55;color:var(--ink)">
       Everyone starts the season with <b>${state.start} points</b>.<br><br>
-      After each team ceremony — WAYWO, crits, team meetings, share-backs — someone hits <b>Log a session</b> and marks who missed it. Each miss takes a point. Holidays, sickness and genuine client emergencies are <b>excused</b> and cost nothing.<br><br>
-      Lose your last pin and you spin the <b>forfeit wheel</b>. Do the forfeit, hit <b>Done it</b>, and you’re back on a full set.<br><br>
-      Anyone can add forfeits to the wheel — keep them fun, not mean. Click a smiley on someone’s card to take a point off them (they won’t be happy about it). Click a sad face to give it back. Click the card itself to change the avatar.
+      Miss a team ceremony — WAYWO, crits, team meetings, share-backs — and anyone can click one of your smileys to take a point. They have to say why, and it goes in the <b>Recently</b> feed with their name on it. Holidays, sickness and genuine client emergencies don’t count.<br><br>
+      Lose your last point and you spin the <b>forfeit wheel</b>. Do the forfeit, hit <b>Done it</b>, and you’re back on a full set.<br><br>
+      Anyone can add forfeits to the wheel — keep them fun, not mean. Click a sad face to give a point back (that gets logged too). Click the card itself to change the avatar.
     </p>
     <div class="actions"><button class="btn primary" type="button" id="ok">Got it</button></div>`);
   m.querySelector('#ok').addEventListener('click', closeModal);
@@ -896,7 +1275,7 @@ function openNewSeason() {
     if (b.id === 'go') {
       b.disabled = true;
       for (const mm of state.members) await safe(() => store.updateMember(mm.id, { points: state.start, forfeit: null }));
-      await safe(() => store.addLog('🌱', `New season — everyone back on ${state.start} points`));
+      await safe(() => store.addLog('season', `New season — everyone back on ${state.start} points`));
       closeModal(); confetti();
     }
   });
@@ -944,7 +1323,14 @@ document.addEventListener('click', async e => {
   if (b.id === 'log-btn') { openLog(); return; }
   if (b.id === 'starters') { b.disabled = true; for (const t of STARTERS) await safe(() => store.addForfeit(t)); return; }
   if (b.dataset.delf) { await safe(() => store.deleteForfeit(b.dataset.delf)); return; }
-  if (b.dataset.face) { e.stopPropagation(); bump(b); return; }
+  if (b.dataset.face) {
+    e.stopPropagation();
+    const id = b.dataset.face, dir = Number(b.dataset.dir), mm = state.members.find(x => x.id === id);
+    if (!mm || pending.has(id)) return;
+    withMe(() => dir < 0 ? askReason(mm) : bump(id, 1));
+    return;
+  }
+  if (b.id === 'me-btn') { askWhoAmI(); return; }
   if (b.id === 'sound') { soundOn = !soundOn; try { localStorage.setItem('showup-sound', soundOn ? 'on' : 'off'); } catch (er) {} b.textContent = `Sound effects: ${soundOn ? 'on' : 'off'}`; if (soundOn) ding(); return; }
   if (b.dataset.spin) { e.stopPropagation(); const mm = state.members.find(x => x.id === b.dataset.spin); if (mm) openSpin(mm); return; }
   if (b.dataset.done) { e.stopPropagation(); const mm = state.members.find(x => x.id === b.dataset.done); if (mm) forfeitDone(mm); return; }
