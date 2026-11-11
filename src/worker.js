@@ -54,6 +54,23 @@ async function handleApi(request, env, url) {
     return json({ error: 'Not found' }, 404);
   }
 
+    // ---- Troubleshooting: is the waywo hand-off working? (never shows the secret itself) ----
+  if (resource === 'identity-check' && method === 'GET') {
+    const value = request.headers.get('X-Waywo-User'), sig = request.headers.get('X-Waywo-Signature');
+    let decoded = null;
+    try { decoded = value ? JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)))) : null; } catch {}
+    return json({
+      cameThroughWaywo: !!request.headers.get('X-Waywo-Prefix'),
+      waywoSentWhoYouAre: !!value,
+      waywoSentSignature: !!sig,
+      secretIsSetHere: !!env.SHOWUP_SECRET,
+      secretLength: env.SHOWUP_SECRET ? env.SHOWUP_SECRET.length : 0,
+      secretHasSpacesAtEnds: env.SHOWUP_SECRET ? env.SHOWUP_SECRET !== env.SHOWUP_SECRET.trim() : false,
+      signatureMatches: !!visitor,
+      nameWaywoSent: decoded && decoded.name || null,
+      expired: decoded ? !(decoded.exp > Date.now() / 1000) : null
+    });
+  }
   // ---- Who is this? (used by our own page) ----
   if (resource === 'me' && method === 'GET') {
     if (!visitor) return json({ waywo: null, member: null });
