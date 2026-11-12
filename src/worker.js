@@ -26,6 +26,27 @@ let migrated = false;
 async function migrate(db) {
   if (migrated) return;
   try { await db.prepare('ALTER TABLE members ADD COLUMN waywo_ids TEXT').run(); } catch { /* already there */ }
+  // Design club rota: one row per Wednesday that has something set
+  await db.prepare('CREATE TABLE IF NOT EXISTS design_club (date TEXT PRIMARY KEY, facilitators TEXT, topic TEXT, speaker TEXT, off INTEGER DEFAULT 0, off_reason TEXT, updated_at INTEGER)').run();
+  const count = await db.prepare('SELECT COUNT(*) AS n FROM design_club').first();
+  if (!count || !count.n) {
+    // Starting point, copied from the team's existing rota
+    const seed = [
+      ['2026-10-21', ['Gina', 'Colin'], 'Claude AI Script in action', 0, null],
+      ['2026-10-28', [], '', 1, 'Holidays'],
+      ['2026-11-04', ['Scarlett'], 'Learnings from Google Launchpad AI seminars', 0, null],
+      ['2026-11-11', ['Gina'], '', 0, null],
+      ['2026-11-18', ['Ben'], '', 0, null],
+      ['2026-11-25', ['Di'], '', 0, null],
+      ['2026-12-02', ['Lewis'], '', 0, null],
+      ['2026-12-09', ['Scarlett'], '', 0, null],
+      ['2026-12-16', ['Colin'], '', 0, null],
+      ['2026-12-23', [], '', 1, 'Christmas'],
+      ['2026-12-30', [], '', 1, 'Christmas']
+    ];
+    await db.batch(seed.map(([d, f, t, off, why]) => db.prepare('INSERT OR IGNORE INTO design_club (date, facilitators, topic, speaker, off, off_reason, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .bind(d, JSON.stringify(f), t, '', off, why, Date.now())));
+  }
   migrated = true;
 }
 
@@ -54,7 +75,7 @@ async function handleApi(request, env, url) {
     return json({ error: 'Not found' }, 404);
   }
 
-    // ---- Troubleshooting: is the waywo hand-off working? (never shows the secret itself) ----
+  // ---- Troubleshooting: is the waywo hand-off working? (never shows the secret itself) ----
   if (resource === 'identity-check' && method === 'GET') {
     const value = request.headers.get('X-Waywo-User'), sig = request.headers.get('X-Waywo-Signature');
     let decoded = null;
@@ -71,6 +92,26 @@ async function handleApi(request, env, url) {
       expired: decoded ? !(decoded.exp > Date.now() / 1000) : null
     });
   }
+
+  // ---- Design club rota (every Wednesday, 2pm) ----
+  if (resource === 'club') {
+    if (method === 'GET' && !id) {
+      const rows = (await db.prepare('SELECT * FROM design_club ORDER BY date').all()).results;
+      return json({ sessions: rows.map(r => ({ date: r.date, facilitators: ids(r.facilitators), topic: r.topic || '', speaker: r.speaker || '', off: !!r.off, offReason: r.off_reason || '' })) });
+    }
+    if (id && !/^\d{4}-\d{2}-\d{2}$/.test(id)) return json({ error: 'Bad date' }, 400);
+    if (method === 'PUT' && id) {
+      const facilitators = (Array.isArray(body.facilitators) ? body.facilitators : []).map(n => text(n, 40)).filter(Boolean).slice(0, 4);
+      await db.prepare('INSERT INTO design_club (date, facilitators, topic, speaker, off, off_reason, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(date) DO UPDATE SET facilitators = excluded.facilitators, topic = excluded.topic, speaker = excluded.speaker, off = excluded.off, off_reason = excluded.off_reason, updated_at = excluded.updated_at')
+        .bind(id, JSON.stringify(facilitators), text(body.topic, 140), text(body.speaker, 80), body.off ? 1 : 0, body.off ? text(body.offReason, 40) : null, Date.now()).run();
+      return json({ ok: true });
+    }
+    if (method === 'DELETE' && id) {
+      await db.prepare('DELETE FROM design_club WHERE date = ?').bind(id).run();
+      return json({ ok: true });
+    }
+  }
+
   // ---- Who is this? (used by our own page) ----
   if (resource === 'me' && method === 'GET') {
     if (!visitor) return json({ waywo: null, member: null });
