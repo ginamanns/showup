@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>waywo · Design club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
+<style>
+:root {
+  --page: #ffffff; --canvas: #f5f4f7; --grid: #d9d9d9; --ink: #1c1b1f; --muted: #8e8d93; --line: #ebeaee;
+  --button: #f5f4f7; --button-hover: #ebeaee; --focus: #3b82f6; --accent: #ec9c91; --accent-hover: #e68b7f;
+  --radius: 16px; --serif: "Instrument Serif", Georgia, serif; --sans: "Instrument Sans", system-ui, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--page); color: var(--ink); font-family: var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---- Bar (same as Show up and waywo) ---- */
+.bar { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; padding: 16px 32px; background: var(--page); font: 22px/1.2 var(--serif); }
+.bar-left { justify-self: start; min-width: 0; }
+.bar-right { justify-self: end; display: flex; align-items: center; gap: 10px; }
+.tool-picker { position: relative; }
+.tool-button { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 12px 0 4px; border: none; border-radius: var(--radius); background: none; color: var(--ink); font: 34px/1 var(--serif); cursor: pointer; white-space: nowrap; }
+.tool-button:hover { background: var(--canvas); }
+.tool-chevron { transition: transform .15s; flex: none; }
+.tool-button[aria-expanded="true"] .tool-chevron { transform: rotate(180deg); }
+.tool-menu { position: absolute; z-index: 30; top: calc(100% + 8px); left: 0; display: flex; flex-direction: column; min-width: 220px; width: max-content; padding: 8px; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 10px 30px rgba(0,0,0,.14); }
+.tool-menu a { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 10px 14px; border-radius: 16px; color: var(--ink); text-decoration: none; font: 22px/1.2 var(--serif); }
+.tool-menu a:hover, .tool-menu a:focus-visible { background: #f5f4f7; outline: none; }
+.tool-menu a[aria-current="page"] { background: #f5f4f7; }
+.pill { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 20px; border: 1px solid #c9c8cd; border-radius: var(--radius); background: var(--page); white-space: nowrap; }
+.me-chip { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px 0 4px; border: none; border-radius: var(--radius); background: none; font: 22px var(--serif); cursor: pointer; }
+.me-chip:hover { background: var(--canvas); }
+.mini { width: 36px; height: 36px; border-radius: 12px; overflow: hidden; flex: none; display: grid; place-items: center; }
+.mini svg { width: 100%; height: 100%; display: block; }
+.me-chip small { font: 13px var(--sans); color: var(--muted); }
+@media (max-width: 900px) { .bar { padding: 12px 16px; grid-template-columns: auto 1fr; } .bar-centre { display: none; } }
+
+/* ---- Canvas ---- */
+#stage { position: relative; flex: 1; overflow: auto; margin: 0 10px 10px; border-radius: var(--radius); background-color: var(--canvas);
+  background-image: linear-gradient(var(--grid) .5px, transparent .5px), linear-gradient(90deg, var(--grid) .5px, transparent .5px), linear-gradient(rgba(217,217,217,.45) .5px, transparent .5px), linear-gradient(90deg, rgba(217,217,217,.45) .5px, transparent .5px);
+  background-size: 124px 124px, 124px 124px, 62px 62px, 62px 62px; background-attachment: local; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 40px 28px 80px; }
+.headline { font: 44px/1.05 var(--serif); margin: 0 0 6px; }
+.sub { color: var(--muted); font-size: 16px; margin: 0 0 28px; max-width: 620px; line-height: 1.45; }
+.status-note { margin: 0 0 18px; padding: 10px 14px; border-radius: 12px; background: #fff7e6; font-size: 14px; display: inline-block; }
+
+/* Up next: a pinned card */
+.next { position: relative; display: grid; grid-template-columns: auto 1fr auto; gap: 26px; align-items: center; padding: 26px 28px; margin: 0 0 40px; background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,.08), 0 10px 22px rgba(0,0,0,.1); transform: rotate(-.6deg); }
+.next::before { content: ""; position: absolute; top: -12px; left: 50%; width: 90px; height: 24px; transform: translateX(-50%) rotate(2deg); background: var(--accent); opacity: .7; }
+.next .when { text-align: center; min-width: 96px; }
+.next .when .day { font: 64px/0.9 var(--serif); }
+.next .when .mon { font: 600 13px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-top: 6px; }
+.next .label { font: 600 12px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--accent-hover); margin-bottom: 6px; }
+.next .topic { font: 30px/1.15 var(--serif); margin: 0 0 10px; }
+.next .topic.tbc { color: var(--muted); }
+@media (max-width: 700px) { .next { grid-template-columns: 1fr; text-align: left; } .next .when { text-align: left; } }
+
+.month { font: 28px/1.1 var(--serif); margin: 34px 0 12px; }
+.weeks { display: flex; flex-direction: column; gap: 10px; }
+.week { display: grid; grid-template-columns: 74px 1fr auto; gap: 18px; align-items: center; padding: 14px 18px; background: #fff; border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.05); cursor: pointer; transition: transform .12s, box-shadow .12s; }
+.week:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 8px 18px rgba(0,0,0,.09); }
+.week .date { text-align: center; }
+.week .date .d { font: 34px/1 var(--serif); }
+.week .date .w { font: 600 11px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-top: 3px; }
+.week .info { min-width: 0; }
+.week .topic { font: 500 16px/1.35 var(--sans); }
+.week .topic.tbc { color: var(--muted); font-weight: 400; }
+.week .speaker { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.week.off { background: transparent; box-shadow: inset 0 0 0 1.5px #d6d4db; box-shadow: none; border: 1.5px dashed #d0ced6; }
+.week.off .topic { color: var(--muted); font: 22px var(--serif); }
+.week.past { opacity: .55; }
+.week.today { box-shadow: 0 0 0 2px var(--accent), 0 8px 18px rgba(0,0,0,.08); }
+.people { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.person { display: inline-flex; align-items: center; gap: 7px; padding: 3px 10px 3px 3px; border-radius: 999px; background: var(--canvas); font: 600 14px var(--sans); }
+.person .face { width: 26px; height: 26px; border-radius: 9px; overflow: hidden; display: grid; place-items: center; font: 600 12px var(--sans); color: var(--ink); }
+.person .face svg { width: 100%; height: 100%; display: block; }
+.badges { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.badge { padding: 4px 10px; border-radius: 999px; font: 600 12px var(--sans); white-space: nowrap; }
+.badge.need { background: #fde6e2; color: #b4483a; }
+.badge.tbc { background: #fbf0d4; color: #8a6514; }
+.badge.ok { background: #e3f1e7; color: #2f7a48; }
+.badge.today { background: var(--accent); color: var(--ink); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px; border: none; border-radius: 12px; background: var(--button); font: 15px var(--sans); cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--button-hover); }
+.btn.primary { background: var(--accent); }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.ghost { background: none; }
+.btn.ghost:hover { background: var(--canvas); }
+.btn.small { height: 32px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
+.toggle-past { margin: 4px 0 0; }
+
+/* ---- Modal ---- */
+.scrim { position: fixed; inset: 0; z-index: 50; background: rgba(28,27,31,.32); display: grid; place-items: center; padding: 16px; }
+.modal { width: min(620px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: #fff; border-radius: 20px; padding: 28px; box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 20px 50px rgba(0,0,0,.2); animation: pop .22s cubic-bezier(.2,1.3,.4,1) both; }
+@keyframes pop { from { transform: scale(.94); opacity: 0; } }
+.modal h3 { font: 34px/1.1 var(--serif); font-weight: 400; margin: 0 0 4px; }
+.modal .hint { color: var(--muted); margin: 0 0 20px; font-size: 15px; }
+.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; font: 500 14px var(--sans); }
+.field small { font-weight: 400; color: var(--muted); }
+input[type=text] { height: 42px; padding: 0 12px; border: 1px solid #c9c8cd; border-radius: 12px; font: 15px var(--sans); color: var(--ink); width: 100%; }
+.chosen { display: flex; flex-wrap: wrap; gap: 8px; min-height: 34px; }
+.chosen .person { padding-right: 4px; }
+.chosen .x { border: none; background: none; width: 24px; height: 24px; border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; }
+.chosen .x:hover { background: #fff; color: var(--ink); }
+.team { display: flex; flex-wrap: wrap; gap: 8px; }
+.team button { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 4px; border: 1px solid #e3e1e7; border-radius: 999px; background: #fff; font: 500 14px var(--sans); cursor: pointer; }
+.team button:hover { background: var(--canvas); }
+.team button[aria-pressed="true"] { background: #fde6e2; border-color: var(--accent); }
+.team .face { width: 26px; height: 26px; border-radius: 9px; overflow: hidden; }
+.team .face svg { width: 100%; height: 100%; display: block; }
+.add-row { display: flex; gap: 8px; }
+.switch { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--canvas); margin-bottom: 18px; cursor: pointer; font: 500 15px var(--sans); }
+.switch input { width: 18px; height: 18px; accent-color: var(--accent-hover); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips button { padding: 7px 12px; border: 1px solid #c9c8cd; border-radius: 999px; background: #fff; font: 500 13px var(--sans); cursor: pointer; }
+.chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.actions .left { margin-right: auto; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; padding: 12px 20px; border-radius: var(--radius); background: var(--ink); color: #fff; font: 15px var(--sans); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-left">
+    <div class="tool-picker">
+      <button class="tool-button" id="tool-button" type="button" aria-expanded="false" aria-controls="tool-menu" aria-haspopup="true">
+        <span>Design club</span>
+        <svg class="tool-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M12.5303 6L6.53027 12L0.530273 6" stroke-width="1.5" stroke="#121212"/></svg>
+      </button>
+      <nav class="tool-menu" id="tool-menu" aria-label="Tools" hidden>
+        <a href="/" id="tool-waywo">waywo</a>
+        <a href="./" id="tool-showup">Show up</a>
+        <a href="design-club" id="tool-club" aria-current="page">Design club</a>
+      </nav>
+    </div>
+  </div>
+  <div class="bar-centre"><span class="pill">Every Wednesday&nbsp;&nbsp;·&nbsp;&nbsp;2pm</span></div>
+  <div class="bar-right"><button class="me-chip" id="me-btn" type="button" title="Change who you are"></button></div>
+</header>
+
+<main id="stage">
+  <div class="wrap">
+    <h1 class="headline">Design club rota</h1>
+    <p class="sub">One hour, every Wednesday at 2pm. The facilitator doesn’t have to present: they just line up a speaker or a subject. Can’t make your week? Swap with someone and update it here.</p>
+    <p class="status-note" id="status" hidden></p>
+    <section id="next"></section>
+    <button class="btn ghost small toggle-past" id="toggle-past" type="button" hidden></button>
+    <div id="rota"></div>
+    <div style="margin-top:24px"><button class="btn" id="more" type="button">Show more weeks</button></div>
+  </div>
+</main>
+<div id="modal-root"></div>
+
+<script type="module">
+import { avatarSVG, PASTEL, cleanAvatar } from './avatar.js';
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = (s) => String(s || '').trim().toLowerCase();
+const pad = (n) => String(n).padStart(2, '0');
+const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const fromIso = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const SHORT = MONTHS.map(m => m.slice(0, 3));
+
+/* ---------- data ---------- */
+const state = { sessions: new Map(), members: [], waywo: null, loaded: false, showPast: false, ahead: 16 };
+let meId = null; try { meId = localStorage.getItem('showup-me'); } catch (e) {}
+const me = () => state.members.find(m => m.id === meId);
+
+async function api(path, method = 'GET', body) {
+  const res = await fetch('api' + path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+let busy = 0, lastJSON = '';
+async function load() {
+  try {
+    const [club, st] = await Promise.all([api('/club'), api('/state')]);
+    if (busy) return;
+    const json = JSON.stringify([club, st.members]);
+    hideStatus(); state.loaded = true;
+    if (json === lastJSON) return;
+    lastJSON = json;
+    state.sessions = new Map(club.sessions.map(s => [s.date, s]));
+    state.members = st.members;
+    render();
+  } catch (e) { state.loaded = true; showStatus('Can’t reach the server right now — retrying…'); render(); }
+}
+async function loadMe() {
+  try { const d = await api('/me'); state.waywo = d.waywo; if (d.waywo) meId = d.member ? d.member.id : meId; renderMe(); } catch (e) {}
+}
+async function save(date, session) {
+  busy++;
+  state.sessions.set(date, { date, ...session }); render();
+  try { await api('/club/' + date, 'PUT', session); }
+  catch (e) { toast('That didn’t save — try again.'); }
+  finally { busy--; lastJSON = ''; load(); }
+}
+async function clearWeek(date) {
+  busy++; state.sessions.delete(date); render();
+  try { await api('/club/' + date, 'DELETE'); } catch (e) { toast('That didn’t save — try again.'); }
+  finally { busy--; lastJSON = ''; load(); }
+}
+
+/* ---------- faces ---------- */
+function memberFor(name) { return state.members.find(m => norm(m.name) === norm(name)); }
+function faceFor(name) {
+  const m = memberFor(name);
+  if (m) return `<span class="face">${avatarSVG(m.avatar)}</span>`;
+  const initials = name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  let h = 0; for (const c of norm(name)) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return `<span class="face" style="background:${PASTEL[Math.abs(h) % PASTEL.length]}">${esc(initials)}</span>`;
+}
+const personChip = (name) => `<span class="person">${faceFor(name)}${esc(name)}</span>`;
+
+/* ---------- the list of Wednesdays ---------- */
+function wednesdays() {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const thisWed = new Date(today); thisWed.setDate(today.getDate() + ((3 - today.getDay() + 7) % 7)); // today if Wednesday, else the next one
+  const lastWedOrToday = new Date(thisWed); if (thisWed > today) lastWedOrToday.setDate(thisWed.getDate() - 7);
+  const dates = [];
+  // earliest: the first saved session, or 4 weeks back
+  const saved = [...state.sessions.keys()].sort();
+  let start = new Date(lastWedOrToday); start.setDate(start.getDate() - 28);
+  if (saved[0]) start = fromIso(saved[0]) < lastWedOrToday ? fromIso(saved[0]) : new Date(lastWedOrToday);
+  const end = new Date(thisWed); end.setDate(end.getDate() + 7 * state.ahead);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 7)) dates.push(iso(d));
+  return { dates, todayIso: iso(today) };
+}
+function sessionStatus(s, date, todayIso) {
+  if (s && s.off) return 'off';
+  if (date < todayIso) return 'past';
+  return 'upcoming';
+}
+
+function render() {
+  if (!state.loaded) { $('#rota').innerHTML = '<p class="sub">Loading…</p>'; return; }
+  const { dates, todayIso } = wednesdays();
+  const now = new Date(), afterSession = now.getHours() >= 15;
+  // the next session that's actually happening
+  const nextDate = dates.find(d => (d > todayIso || (d === todayIso && !afterSession)) && !(state.sessions.get(d) || {}).off);
+  renderNext(nextDate, todayIso);
+
+  const past = dates.filter(d => d < todayIso || (d === todayIso && afterSession));
+  const shown = state.showPast ? dates : dates.filter(d => !past.includes(d));
+  const tp = $('#toggle-past'); tp.hidden = !past.length; tp.textContent = state.showPast ? 'Hide earlier weeks' : `Show earlier weeks (${past.length})`;
+
+  let html = '', month = '';
+  for (const d of shown) {
+    const dt = fromIso(d), mKey = `${dt.getFullYear()}-${dt.getMonth()}`;
+    if (mKey !== month) { if (month) html += '</div>'; month = mKey; html += `<h2 class="month">${MONTHS[dt.getMonth()]}${dt.getFullYear() !== new Date().getFullYear() ? ' ' + dt.getFullYear() : ''}</h2><div class="weeks">`; }
+    html += weekRow(d, state.sessions.get(d), todayIso, past.includes(d));
+  }
+  if (month) html += '</div>';
+  $('#rota').innerHTML = html;
+  renderMe();
+}
+
+function weekRow(d, s, todayIso, isPast) {
+  const dt = fromIso(d);
+  const f = s ? s.facilitators : [], topic = s ? s.topic : '', off = s && s.off;
+  const isToday = d === todayIso;
+  let badges = '';
+  if (off) badges = '';
+  else if (isToday) badges = `<span class="badge today">Today, 2pm</span>`;
+  if (!off && !isPast) {
+    if (!f.length) badges += `<span class="badge need">Needs a facilitator</span>`;
+    else if (!topic) badges += `<span class="badge tbc">Topic TBC</span>`;
+    else badges += `<span class="badge ok">All set</span>`;
+    if (!f.length && me()) badges += `<button class="btn small primary" type="button" data-take="${d}">I’ll take it</button>`;
+  }
+  const info = off
+    ? `<div class="topic">No session${s.offReason ? ` · ${esc(s.offReason)}` : ''}</div>`
+    : `<div class="topic${topic ? '' : ' tbc'}">${topic ? esc(topic) : (f.length ? 'Topic to be announced' : 'Up for grabs')}</div>
+       ${s && s.speaker ? `<div class="speaker">Speaker: ${esc(s.speaker)}</div>` : ''}
+       ${f.length ? `<div class="people">${f.map(personChip).join('')}</div>` : ''}`;
+  return `<article class="week${off ? ' off' : ''}${isPast ? ' past' : ''}${isToday && !off ? ' today' : ''}" data-week="${d}" tabindex="0" aria-label="Wednesday ${dt.getDate()} ${MONTHS[dt.getMonth()]}">
+    <div class="date"><div class="d">${dt.getDate()}</div><div class="w">Wed · ${SHORT[dt.getMonth()]}</div></div>
+    <div class="info">${info}</div>
+    <div class="badges">${badges}</div>
+  </article>`;
+}
+
+function renderNext(d, todayIso) {
+  if (!d) { $('#next').innerHTML = ''; return; }
+  const s = state.sessions.get(d) || { facilitators: [], topic: '' }, dt = fromIso(d);
+  const days = Math.round((dt - fromIso(todayIso)) / 864e5);
+  const label = days === 0 ? 'Today at 2pm' : days === 1 ? 'Tomorrow at 2pm' : `Up next · in ${days} days`;
+  $('#next').innerHTML = `<div class="next" data-week="${d}">
+    <div class="when"><div class="day">${dt.getDate()}</div><div class="mon">Wed · ${SHORT[dt.getMonth()]}</div></div>
+    <div>
+      <div class="label">${label}</div>
+      <p class="topic${s.topic ? '' : ' tbc'}">${s.topic ? esc(s.topic) : (s.facilitators.length ? 'Topic to be announced' : 'Nobody’s running this one yet')}</p>
+      ${s.speaker ? `<div class="speaker" style="color:var(--muted);margin:-4px 0 8px">Speaker: ${esc(s.speaker)}</div>` : ''}
+      <div class="people">${s.facilitators.length ? s.facilitators.map(personChip).join('') : ''}</div>
+    </div>
+    <div>${!s.facilitators.length && me() ? `<button class="btn primary" type="button" data-take="${d}">I’ll take it</button>` : `<button class="btn" type="button" data-edit="${d}">Edit</button>`}</div>
+  </div>`;
+}
+
+function renderMe() {
+  const m = me(), btn = $('#me-btn');
+  btn.innerHTML = m ? `<span class="mini">${avatarSVG(m.avatar)}</span><span>${esc(m.name)}</span><small>change</small>`
+    : `<span class="mini" style="background:var(--canvas);color:var(--muted);font:600 18px var(--sans)">?</span><span>Who are you?</span>`;
+}
+
+/* ---------- editing a week ---------- */
+function openModal(html) {
+  $('#modal-root').innerHTML = `<div class="scrim"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  const scrim = $('#modal-root').firstElementChild;
+  scrim.addEventListener('mousedown', e => { if (e.target === scrim) closeModal(); });
+  return scrim.firstElementChild;
+}
+const closeModal = () => { $('#modal-root').innerHTML = ''; };
+
+function openWeek(d) {
+  const s = state.sessions.get(d) || { facilitators: [], topic: '', speaker: '', off: false, offReason: '' };
+  let f = [...s.facilitators], off = !!s.off, reason = s.offReason || '';
+  const dt = fromIso(d);
+  const m = openModal(`
+    <h3>Wednesday ${dt.getDate()} ${MONTHS[dt.getMonth()]}</h3>
+    <p class="hint">2pm · one hour</p>
+    <label class="switch"><input type="checkbox" id="off" ${off ? 'checked' : ''}> No session this week</label>
+    <div id="off-fields" ${off ? '' : 'hidden'}>
+      <div class="field">Why not?<div class="chips" id="reasons">${['Holidays', 'Christmas', 'Bank holiday', 'Team day'].map(r => `<button type="button" data-reason="${r}" aria-pressed="${reason === r}">${r}</button>`).join('')}</div>
+        <input type="text" id="reason" maxlength="40" placeholder="Or type a reason…" value="${['Holidays', 'Christmas', 'Bank holiday', 'Team day'].includes(reason) ? '' : esc(reason)}"></div>
+    </div>
+    <div id="on-fields" ${off ? 'hidden' : ''}>
+      <div class="field">Facilitator <small>Organises the session: lines up a speaker or picks a subject. Up to 4.</small>
+        <div class="chosen" id="chosen"></div>
+        <div class="team" id="team"></div>
+        <div class="add-row"><input type="text" id="other" maxlength="40" placeholder="Someone else? Type their name"><button class="btn" type="button" id="add-other">Add</button></div>
+      </div>
+      <label class="field">Theme / topic <input type="text" id="topic" maxlength="140" placeholder="e.g. Accessibility quick wins" value="${esc(s.topic)}"></label>
+      <label class="field">Speaker <small>Optional — if someone other than the facilitator is presenting</small><input type="text" id="speaker" maxlength="80" placeholder="e.g. Guest from the dev team" value="${esc(s.speaker)}"></label>
+    </div>
+    <div class="actions">
+      ${state.sessions.has(d) ? '<button class="btn ghost left" type="button" id="clear">Clear this week</button>' : ''}
+      <button class="btn ghost" type="button" id="cancel">Cancel</button>
+      <button class="btn primary" type="button" id="save">Save</button>
+    </div>`);
+  const paint = () => {
+    m.querySelector('#chosen').innerHTML = f.length ? f.map((n, i) => `<span class="person">${faceFor(n)}${esc(n)}<button class="x" type="button" data-remove="${i}" aria-label="Remove ${esc(n)}">×</button></span>`).join('') : '<span style="color:var(--muted);font-weight:400">Nobody yet</span>';
+    m.querySelector('#team').innerHTML = state.members.map(x => `<button type="button" data-pick="${esc(x.name)}" aria-pressed="${f.some(n => norm(n) === norm(x.name))}"><span class="face">${avatarSVG(x.avatar)}</span>${esc(x.name)}</button>`).join('');
+  };
+  paint();
+  const addName = (n) => { n = n.trim(); if (!n) return; const i = f.findIndex(x => norm(x) === norm(n)); if (i >= 0) f.splice(i, 1); else if (f.length < 4) f.push(n); paint(); };
+  m.querySelector('#off').addEventListener('change', e => { off = e.target.checked; m.querySelector('#off-fields').hidden = !off; m.querySelector('#on-fields').hidden = off; });
+  m.querySelector('#other').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addName(e.target.value); e.target.value = ''; } });
+  m.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.pick) addName(b.dataset.pick);
+    else if (b.dataset.remove) { f.splice(Number(b.dataset.remove), 1); paint(); }
+    else if (b.id === 'add-other') { const i = m.querySelector('#other'); addName(i.value); i.value = ''; }
+    else if (b.dataset.reason) { reason = b.dataset.reason; m.querySelector('#reason').value = ''; m.querySelectorAll('[data-reason]').forEach(x => x.setAttribute('aria-pressed', x === b)); }
+    else if (b.id === 'cancel') closeModal();
+    else if (b.id === 'clear') { closeModal(); clearWeek(d); }
+    else if (b.id === 'save') {
+      const typed = m.querySelector('#reason').value.trim(); if (typed) reason = typed;
+      closeModal();
+      save(d, { facilitators: off ? [] : f, topic: off ? '' : m.querySelector('#topic').value.trim(), speaker: off ? '' : m.querySelector('#speaker').value.trim(), off, offReason: off ? reason : '' });
+    }
+  });
+}
+
+function askWhoAmI(then) {
+  if (!state.members.length) { toast('Add yourself on Show up first.'); return; }
+  const m = openModal(`<h3>Who are you?</h3><p class="hint">So “I’ll take it” knows who to put down. Same as on Show up.</p>
+    <div class="team">${state.members.map(x => `<button type="button" data-me="${esc(x.id)}"><span class="face">${avatarSVG(x.avatar)}</span>${esc(x.name)}</button>`).join('')}</div>
+    <div class="actions"><button class="btn ghost" type="button" id="cancel">Cancel</button></div>`);
+  m.addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'cancel') closeModal();
+    if (b.dataset.me) {
+      if (state.waywo) { try { const r = await fetch('api/link', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ member: b.dataset.me, confirm: true }) }); if (!r.ok) throw 0; } catch (err) { toast('That didn’t work — try again.'); return; } }
+      meId = b.dataset.me; try { localStorage.setItem('showup-me', meId); } catch (err) {}
+      closeModal(); render(); if (then) then();
+    }
+  });
+}
+
+function take(d) {
+  const m = me(); if (!m) return askWhoAmI(() => take(d));
+  const s = state.sessions.get(d) || { facilitators: [], topic: '', speaker: '', off: false, offReason: '' };
+  save(d, { ...s, facilitators: [m.name] });
+  toast(`You’re down for Wednesday ${fromIso(d).getDate()} ${MONTHS[fromIso(d).getMonth()]}. Thank you!`);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-take]'); if (t) { e.stopPropagation(); take(t.dataset.take); return; }
+  const ed = e.target.closest('[data-edit]'); if (ed) { openWeek(ed.dataset.edit); return; }
+  if (e.target.closest('#me-btn')) { askWhoAmI(); return; }
+  if (e.target.closest('#toggle-past')) { state.showPast = !state.showPast; render(); return; }
+  if (e.target.closest('#more')) { state.ahead += 12; render(); return; }
+  const w = e.target.closest('[data-week]'); if (w && !$('.scrim')) openWeek(w.dataset.week);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('.scrim')) closeModal();
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.week && !$('.scrim')) { e.preventDefault(); openWeek(e.target.dataset.week); }
+});
+
+let toastTimer;
+function toast(msg) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); } t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 3200); }
+function showStatus(msg) { const s = $('#status'); s.textContent = msg; s.hidden = false; }
+function hideStatus() { $('#status').hidden = true; }
+
+/* ---------- shared tool switcher ---------- */
+(function setupToolMenu() {
+  const btn = $('#tool-button'), menu = $('#tool-menu');
+  const underWaywo = location.pathname.startsWith('/showup/');
+  if (!underWaywo) $('#tool-waywo').href = 'https://waywo.bensxstn.workers.dev/';
+  const links = () => [...menu.querySelectorAll('a')];
+  const open = (focusFirst) => { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); if (focusFirst) links()[0].focus(); };
+  const close = (refocus) => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); if (refocus) btn.focus(); };
+  btn.addEventListener('click', () => menu.hidden ? open(false) : close(false));
+  btn.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { e.preventDefault(); open(true); } });
+  document.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('.tool-picker')) close(false); });
+  menu.addEventListener('keydown', e => {
+    const l = links(), i = l.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); l[(i + 1) % l.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); l[(i - 1 + l.length) % l.length].focus(); }
+    else if (e.key === 'Home') { e.preventDefault(); l[0].focus(); }
+    else if (e.key === 'End') { e.preventDefault(); l[l.length - 1].focus(); }
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) close(true); });
+})();
+
+render();
+load().then(loadMe);
+setInterval(() => { if (document.visibilityState === 'visible') load(); }, 20000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') load(); });
+</script>
+</body>
+</html>
