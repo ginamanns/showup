@@ -95,10 +95,26 @@ function petSVG(type, breed, colourIdx, markIdx, uidStr, accType = 0, accIdx = 3
       case 6: o = `<path d="M18 168 L20 150 L30 162 Z M50 168 L48 150 L38 162 Z" fill="${C}"/>` + head() + `<path d="M20 170 L31 168 L31 173 Z M48 170 L37 168 L37 173 Z" fill="${M}"/>` + lt('M20 170 L31 168 L31 173 Z M48 170 L37 168 L37 173 Z', .35) +
         `<path d="M17 185 L19 201 L25 195 L29 204 L34 196 L39 204 L43 195 L49 201 L51 185 Q34 177 17 185 Z" fill="${C}"/>` + lt('M17 185 L19 201 L25 195 L29 204 L34 196 L39 204 L43 195 L49 201 L51 185 Q34 177 17 185 Z', .22) + eyes(177) + nose(184.5); break;
       case 7: o = blob(17, 157, 9.5, 17, C, -18) + blob(51, 157, 9.5, 17, C, 18) + blob(17, 158, 5, 11, PINK, -18) + blob(51, 158, 5, 11, PINK, 18) + head(21, 18, C, 182) + blob(26, 176, 7, 6, M) + blob(34, 190, 9, 6, '#3A3132') + eyes(178, 8.5, 4) + nose(187, 4, 3) + blush(188, 15); break;
-      case 8: { // scruffy
-        let d = ''; for (let i = 0; i <= 24; i++) { const a = i / 24 * 6.283, r = i % 2 ? 19 : 25; d += `${i ? 'L' : 'M'}${(34 + r * Math.cos(a)).toFixed(1)} ${(181 + r * 0.95 * Math.sin(a)).toFixed(1)} `; }
-        o = blob(14, 178, 7, 13, C, 30) + dk(ell(14, 178, 6, 12), .15) + `<path d="M50 172 L58 152 L46 166 Z" fill="${C}"/>` + `<path d="${d}Z" fill="${C}"/>` + `<path d="M20 172 L24 166 L27 172 L30 165 L33 172 Z M35 172 L38 165 L41 172 L44 166 L48 172 Z" fill="${M}"/>` +
-          `<path d="M22 188 L24 200 L28 195 L31 203 L34 196 L37 203 L40 195 L44 200 L46 188 Q34 182 22 188 Z" fill="${M}"/>` + eyes(178, 7.5, 3.6) + nose(186) + tongue(193) + blush(185, 15); break; }
+      case 8: { // scruffy: shaggy wiry coat, fringe over the eyes, dark muzzle, tongue out
+        const strand = (x, y, a, len, curl, col, w = 2.2, op = 1) => { const ex = x + len * Math.cos(a), ey = y + len * Math.sin(a), cx = x + len * .5 * Math.cos(a + curl), cy = y + len * .5 * Math.sin(a + curl);
+          return `<path d="M${x.toFixed(1)} ${y.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="${op}"/>`; };
+        const LC = lighter(C);
+        let fur = '', hl = '', fringe = '', beard = '';
+        // short wispy edge, combed downwards like a wiry coat
+        for (let i = 0; i < 30; i++) { const a = i / 30 * 6.283, x = 34 + 16.5 * Math.cos(a), y = 181 + 20.5 * Math.sin(a), dir = a * .55 + 1.5708 * .45;
+          fur += strand(x, y, dir + (i % 2 ? .2 : -.2), 3.5 + (i * 7 % 3), i % 2 ? .7 : -.7, C, 2.4); }
+        // a few lighter wiry hairs on the face
+        for (let i = 0; i < 6; i++) { const x = 23 + (i * 11 % 22), y = 182 + (i * 7 % 10); hl += strand(x, y, 1.9 + (i % 2) * .4, 4.5, .5, LC, 1.3, .8); }
+        // short fringe falling over the top of the eyes, so they just peek through
+        for (let i = 0; i < 8; i++) { const x = 22.5 + i * 3.3; fringe += strand(x, 160.5 + Math.abs(i - 3.5) * .8, 1.5 + (i - 3.5) * .08, 10 + (i % 2) * 2, i % 2 ? .35 : -.35, i % 3 ? C : LC, 2.6); }
+        // little beard under the muzzle
+        for (let i = 0; i < 5; i++) { beard += strand(29 + i * 2.5, 197, 1.57 + (i - 2) * .14, 4 + (i % 2) * 2, i % 2 ? .4 : -.4, M, 2); }
+        o = `<path d="M19 165 Q9 160 9.5 172 Q12 179 21 174 Z M49 165 Q59 160 58.5 172 Q56 179 47 174 Z" fill="${M}"/>` +
+          fur + blob(34, 181, 17, 21, C) + hl +
+          eyes(176.5, 6.8, 3.2) + fringe +
+          blob(34, 192, 9, 7.5, M) + beard +
+          `<ellipse cx="34" cy="189" rx="5.2" ry="4" fill="${INK}"/>` + circ(32.4, 187.7, 1.2, '#fff') +
+          `<path d="M30.5 196 Q30 207 34 207 Q38 207 37.5 196 Z" fill="#EE7FA0"/>` + ln('M34 197.5 V203.5', 1.2, 'rgba(0,0,0,.2)') + ln('M28.5 195 Q34 198 39.5 195', 1.6) + blush(185, 12.5); break; }
       case 9: o = fluff(13, 186, 7, 5, 6.5, C, -1.6, 1.6) + fluff(55, 186, 7, 5, 6.5, C, 1.6, 4.7) + dk(ell(13, 186, 7, 13), .1) + dk(ell(55, 186, 7, 13), .1) + fluff(34, 180, 19, 12, 6.5, C) + head(18, 17) + muzzle(lighter(C), 8, 6, 188) + eyes(177, 7) + nose(185, 4.4, 3.4) + wmouth(189.5) + blush(185, 12); break;
       case 10: o = floppy(M, 8.5, 15, 177, 19, 12) + fluff(15, 190, 2, 3, 4, M, 1.2, 2.2) + fluff(53, 190, 2, 3, 4, M, 1, 2) + head() + muzzle(lighter(C), 11, 8, 188) + eyes() + nose() + tongue(190) + blush(); break;
       case 11: o = blob(13, 182, 9, 19, M, 12) + blob(55, 182, 9, 19, M, -12) + head() + `<path d="M31 160 L37 160 L39 180 Q46 186 44 194 Q34 200 24 194 Q22 186 29 180 Z" fill="${W2}"/>` + eyes(176, 8.5) + nose(185) + wmouth(190) + blush(186, 15); break;
